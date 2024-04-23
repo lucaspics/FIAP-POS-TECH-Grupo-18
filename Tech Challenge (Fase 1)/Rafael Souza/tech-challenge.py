@@ -1,7 +1,8 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
@@ -41,19 +42,31 @@ y_scaled = scaler_y.fit_transform(y.values.reshape(-1, 1))
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_scaled, test_size=0.2, random_state=42)
 
 # Modelo de Regressão Linear
-modelo = LinearRegression()
-modelo.fit(X_train, y_train)
-y_pred = modelo.predict(X_test)
+modelo_linear = LinearRegression()
+modelo_linear.fit(X_train, y_train)
+y_pred_linear = modelo_linear.predict(X_test)
 
 # Modelo de regressão Árvore de Decisão
-modelo = DecisionTreeRegressor()
+modelo_arvore = DecisionTreeRegressor()
+modelo_arvore.fit(X_train, y_train)
+y_pred_arvore = modelo_arvore.predict(X_test)
 
 # 4. Avaliação do Modelo
-print('Mean Squared Error (MSE):', mean_squared_error(y_test, y_pred))
-print('Coefficient of Determination (R^2):', r2_score(y_test, y_pred))
+print('Regressão Linear:')
+print('MSE:', mean_squared_error(y_test, y_pred_linear))
+print('R^2:', r2_score(y_test, y_pred_linear))
+print('\nÁrvore de Decisão:')
+print('MSE:', mean_squared_error(y_test, y_pred_arvore))
+print('R^2:', r2_score(y_test, y_pred_arvore))
 
-plt.scatter(y_test, y_pred)
+# Gráfico de dispersão para o modelo de regressão linear
+plt.scatter(y_test, y_pred_linear, color='blue', label='Regressão Linear')
+
+# Gráfico de dispersão para o modelo de regressão com árvore de decisão
+plt.scatter(y_test, y_pred_arvore, color='red', label='Árvore de Decisão')
+
 plt.xlabel('Valores Reais')
 plt.ylabel('Previsões')
 plt.title('Valores Reais vs Previsões')
+plt.legend()
 plt.show()

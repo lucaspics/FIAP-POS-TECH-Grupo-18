@@ -1,7 +1,6 @@
 import codecs
 import csv
 import random
-import numpy as np
 
 # Definindo as faixas de valores para cada coluna
 faixas_idade = range(18, 90)  # Idade entre 18 e 90 anos

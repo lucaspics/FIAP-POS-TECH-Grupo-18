@@ -3,18 +3,35 @@ import csv
 import random
 
 # Definindo as faixas de valores para cada coluna
-faixas_idade = range(18, 81)  # Idade entre 18 e 80 anos
-generos = ["masculino"] * 5000 + ["feminino"] * 5000  # Gêneros com distribuição igual
-random.shuffle(generos)  # Mistura a lista para garantir a aleatoriedade
-faixas_imc = [random.uniform(18.0, 40.0) for _ in range(10000)]  # IMC entre 18 e 40
+faixas_idade = range(18, 90)  # Idade entre 18 e 90 anos
+generos = ["masculino", "feminino"]  # Gêneros masculino e feminino
+faixas_imc = [x / 10 for x in range(120, 501)]  # IMC entre 12.0 e 50.0
 numero_filhos = range(0, 5)  # Número de filhos entre 0 e 4
-fumantes = ["sim", "não"]  # Fumante ou não
+fumantes = ["sim", "não"]  # Fumante ou não fumante
 regioes = ["norte", "nordeste", "sudeste", "sul", "centro-oeste"]  # Regiões do Brasil
-faixas_encargos = [random.uniform(15000.0, 50000.0) for _ in range(10000)]  # Encargos entre R$ 15.000 e R$ 50.000
+
+
+# Função para calcular os encargos com base nas características individuais
+def calcular_encargos(idade, genero, imc, filhos, fumante, regiao):
+    encargos_base = (
+            idade * 80.33  # Baseado na idade
+            + imc * 255.52  # Baseado no IMC
+    )
+    # Multiplicadores adicionais
+    if genero == "masculino":
+        encargos_base *= 1.1  # Homens possuem maior taxa de mortalidade
+    if genero == "feminino" and filhos > 0:
+        encargos_base *= 1.05  # Mulheres que já tiveram filhos possuem uma tendência maior a aparição de sintomas de saúde
+    if fumante == "sim":
+        encargos_base *= 1.5  # Indivíduos fumantes apresentam um enorme acréscimo na taxa de aparição de sintomas de saúde
+    if regiao in ["sul", "sudeste"]:
+        encargos_base *= 1.2  # Regiões sul e sudeste possuem hospitais mais caros
+
+    return encargos_base
+
 
 # Abrindo o arquivo CSV para escrita com codificação UTF-8
 with codecs.open('dados_ficticios.csv', 'w', 'utf-8') as arquivo_csv:
-
     # Criando o objeto escritor de CSV
     escritor_csv = csv.writer(arquivo_csv)
 
@@ -22,14 +39,17 @@ with codecs.open('dados_ficticios.csv', 'w', 'utf-8') as arquivo_csv:
     escritor_csv.writerow(["idade", "gênero", "imc", "filhos", "fumante", "região", "encargos"])
 
     # Gerando e escrevendo 10.000 linhas de dados fictícios
-    for i in range(10000):
-        dados_linha = [
-            str(random.choice(faixas_idade)),
-            generos[i],  # Escolhe o gênero correspondente ao índice atual
-            "{:.15f}".format(random.choice(faixas_imc)),  # Formatando o IMC com 15 casas decimais
-            str(random.choice(numero_filhos)),
-            random.choice(fumantes),
-            random.choice(regioes),
-            "{:.15f}".format(faixas_encargos[i])  # Formatando os encargos com 15 casas decimais
-        ]
+    for _ in range(10000):
+        # Gerando dados aleatórios para cada linha
+        idade = random.choice(faixas_idade)
+        genero = random.choice(generos)
+        imc = random.choice(faixas_imc)
+        filhos = random.choice(numero_filhos)
+        fumante = random.choice(fumantes)
+        regiao = random.choice(regioes)
+        # Calculando os encargos com base nos dados gerados
+        encargos = calcular_encargos(idade, genero, imc, filhos, fumante, regiao)
+        # Escrevendo os dados no arquivo CSV
+        dados_linha = [str(idade), genero, "{:.15f}".format(imc), str(filhos), fumante, regiao,
+                       "{:.15f}".format(encargos)]
         escritor_csv.writerow(dados_linha)

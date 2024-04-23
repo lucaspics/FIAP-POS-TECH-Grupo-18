@@ -13,7 +13,9 @@ Certifique-se de ter Python instalado no seu computador. Você também precisa i
 
 Você pode instalar essas bibliotecas usando o pip. Por exemplo:
 
-pip install pandas seaborn matplotlib scikit-learn
+```python
+pip install pandas numpy seaborn matplotlib scikit-learn --user
+```
 
 ## Como usar
 
@@ -48,6 +50,27 @@ Este conjunto de dados fictícios foi gerado para simulação e demonstração. 
 - **Fumante:** O hábito de fumar foi simulado com 20% dos registros sendo fumantes e 80% não fumantes.
 - **Região:** A distribuição dos registros foi proporcional às populações regionais do Brasil.
 - **Encargos:** Os encargos foram simulados com base em diversos fatores, incluindo idade, gênero, região, renda e outros, seguindo um modelo probabilístico.
+
+
+Cálculo dos Encargos
+Os encargos de cada pessoa foram calculados com base nas características individuais (idade, gênero, IMC, número de filhos, hábito de fumar e região). O cálculo dos encargos segue a seguinte lógica:
+
+```python
+encargos_base = (idade * 80.33) + (IMC * 255.52)
+
+# Multiplicadores adicionais
+if genero == "masculino":
+    encargos_base *= 1.1  # Homens possuem maior taxa de mortalidade
+if genero == "feminino" and filhos > 0:
+    encargos_base *= 1.05  # Mulheres que já tiveram filhos possuem uma tendência maior a aparição de sintomas de saúde
+if fumante == "sim":
+    encargos_base *= 1.5  # Indivíduos fumantes apresentam um enorme acréscimo na taxa de aparição de sintomas de saúde
+if regiao in ["sul", "sudeste"]:
+    encargos_base *= 1.2  # Regiões sul e sudeste possuem hospitais mais caros
+
+encargos = encargos_base
+
+```
 
 ## Observações Importantes
 

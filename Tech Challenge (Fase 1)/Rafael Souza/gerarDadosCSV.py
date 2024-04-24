@@ -39,7 +39,7 @@ with codecs.open('dados_ficticios.csv', 'w', 'utf-8') as arquivo_csv:
     escritor_csv.writerow(["idade", "gênero", "imc", "filhos", "fumante", "região", "encargos"])
 
     # Gerando e escrevendo 10.000 linhas de dados fictícios
-    for _ in range(10000):
+    for _ in range(50000):
         # Gerando dados aleatórios para cada linha
         idade = random.choice(faixas_idade)
         genero = random.choice(generos)

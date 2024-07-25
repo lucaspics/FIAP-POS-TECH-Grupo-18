@@ -10,6 +10,9 @@ Este projeto utiliza um algoritmo genético para otimizar o layout de uma gôndo
 - **Paulo RM355014**
 - **Fábio RM354943**
 
+## Apresentação em Vídeo
+https://youtu.be/Wp6ZQkQCezQ?si=5aostoBH0VTqjeGa
+
 ## Bibliotecas Utilizadas
 - `random`: Para geração de números aleatórios.
 - `pandas`: Para manipulação e leitura de dados.

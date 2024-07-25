@@ -1,0 +1,2100 @@
+Geração 1:
+Condicionador (Higiene) - Frequência: 50
+Chips (Snacks) - Frequência: 70
+Manteiga (Laticínios) - Frequência: 40
+Peixe (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Feijão (Grãos) - Frequência: 60
+Sabonete (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Pipoca (Snacks) - Frequência: 70
+Presunto (Carnes) - Frequência: 75
+Sabão em Pó (Limpeza) - Frequência: 65
+Lustra Móveis (Limpeza) - Frequência: 65
+Trigo (Grãos) - Frequência: 55
+Milho (Grãos) - Frequência: 60
+Banana (Hortifruti) - Frequência: 85
+Água Mineral (Bebidas) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Morango (Hortifruti) - Frequência: 85
+Detergente (Limpeza) - Frequência: 50
+Queijo (Laticínios) - Frequência: 50
+Refrigerante (Bebidas) - Frequência: 70
+Maçã (Hortifruti) - Frequência: 80
+Carne Bovina (Carnes) - Frequência: 90
+Frango (Carnes) - Frequência: 75
+Chocolate (Snacks) - Frequência: 75
+Biscoito (Snacks) - Frequência: 75
+Desodorante (Higiene) - Frequência: 30
+Arroz (Grãos) - Frequência: 55
+Iogurte (Laticínios) - Frequência: 40
+Abacaxi (Hortifruti) - Frequência: 80
+Café (Bebidas) - Frequência: 55
+Suco (Bebidas) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Amaciante (Limpeza) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Condicionador (Higiene) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Lasanha (Massas) - Frequência: 45
+
+Geração 2:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Lasanha (Massas) - Frequência: 45
+Milho (Grãos) - Frequência: 60
+Detergente (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Molho Branco (Massas) - Frequência: 35
+Amaciante (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Feijão (Grãos) - Frequência: 60
+Refrigerante (Bebidas) - Frequência: 70
+Manteiga (Laticínios) - Frequência: 40
+Queijo (Laticínios) - Frequência: 50
+Morango (Hortifruti) - Frequência: 85
+Chips (Snacks) - Frequência: 70
+Frango (Carnes) - Frequência: 75
+Presunto (Carnes) - Frequência: 75
+Condicionador (Higiene) - Frequência: 50
+Shampoo (Higiene) - Frequência: 50
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Biscoito (Snacks) - Frequência: 75
+Pipoca (Snacks) - Frequência: 70
+Trigo (Grãos) - Frequência: 55
+Abacaxi (Hortifruti) - Frequência: 80
+Molho de Tomate (Massas) - Frequência: 35
+Arroz (Grãos) - Frequência: 55
+Gel de Banho (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Peixe (Carnes) - Frequência: 90
+Lustra Móveis (Limpeza) - Frequência: 65
+Leite (Laticínios) - Frequência: 60
+Maçã (Hortifruti) - Frequência: 80
+Sabonete (Higiene) - Frequência: 30
+Carne Bovina (Carnes) - Frequência: 90
+Café (Bebidas) - Frequência: 55
+Suco (Bebidas) - Frequência: 65
+Banana (Hortifruti) - Frequência: 85
+Iogurte (Laticínios) - Frequência: 40
+Macarrão (Massas) - Frequência: 45
+
+Geração 3:
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Iogurte (Laticínios) - Frequência: 40
+Água Mineral (Bebidas) - Frequência: 50
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Maçã (Hortifruti) - Frequência: 80
+Morango (Hortifruti) - Frequência: 85
+Abacaxi (Hortifruti) - Frequência: 80
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Peixe (Carnes) - Frequência: 90
+Frango (Carnes) - Frequência: 75
+Condicionador (Higiene) - Frequência: 45
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Molho de Tomate (Massas) - Frequência: 35
+Manteiga (Laticínios) - Frequência: 40
+Chocolate (Snacks) - Frequência: 75
+Queijo (Laticínios) - Frequência: 50
+Molho Branco (Massas) - Frequência: 35
+Detergente (Limpeza) - Frequência: 50
+Perfume (Higiene) - Frequência: 45
+Milho (Grãos) - Frequência: 60
+Pipoca (Snacks) - Frequência: 70
+Condicionador (Higiene) - Frequência: 50
+Sabonete (Higiene) - Frequência: 30
+Refrigerante (Bebidas) - Frequência: 70
+Pasta de Dente (Higiene) - Frequência: 45
+Desodorante (Higiene) - Frequência: 30
+Lasanha (Massas) - Frequência: 45
+Macarrão (Massas) - Frequência: 45
+Carne Bovina (Carnes) - Frequência: 90
+Gel de Banho (Higiene) - Frequência: 45
+Banana (Hortifruti) - Frequência: 85
+Lustra Móveis (Limpeza) - Frequência: 65
+
+Geração 4:
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Iogurte (Laticínios) - Frequência: 40
+Água Mineral (Bebidas) - Frequência: 50
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Maçã (Hortifruti) - Frequência: 80
+Perfume (Higiene) - Frequência: 45
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Molho Branco (Massas) - Frequência: 35
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Manteiga (Laticínios) - Frequência: 40
+Carne Bovina (Carnes) - Frequência: 90
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Peixe (Carnes) - Frequência: 90
+Frango (Carnes) - Frequência: 75
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Molho de Tomate (Massas) - Frequência: 35
+Chocolate (Snacks) - Frequência: 75
+Queijo (Laticínios) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Lasanha (Massas) - Frequência: 45
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Desodorante (Higiene) - Frequência: 30
+Sabonete (Higiene) - Frequência: 30
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Refrigerante (Bebidas) - Frequência: 70
+Lustra Móveis (Limpeza) - Frequência: 65
+
+Geração 5:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Iogurte (Laticínios) - Frequência: 40
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Amaciante (Limpeza) - Frequência: 50
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Suco (Bebidas) - Frequência: 65
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Manteiga (Laticínios) - Frequência: 40
+Carne Bovina (Carnes) - Frequência: 90
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Condicionador (Higiene) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Queijo (Laticínios) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Gel de Banho (Higiene) - Frequência: 45
+Refrigerante (Bebidas) - Frequência: 70
+Pipoca (Snacks) - Frequência: 70
+Chocolate (Snacks) - Frequência: 75
+Sabão em Pó (Limpeza) - Frequência: 65
+Sabonete (Higiene) - Frequência: 30
+Molho de Tomate (Massas) - Frequência: 35
+Peixe (Carnes) - Frequência: 90
+Frango (Carnes) - Frequência: 75
+Presunto (Carnes) - Frequência: 75
+
+Geração 6:
+Gel de Banho (Higiene) - Frequência: 45
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Lasanha (Massas) - Frequência: 45
+Milho (Grãos) - Frequência: 60
+Detergente (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Molho Branco (Massas) - Frequência: 35
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Lustra Móveis (Limpeza) - Frequência: 65
+Molho de Tomate (Massas) - Frequência: 35
+Manteiga (Laticínios) - Frequência: 40
+Frango (Carnes) - Frequência: 75
+Macarrão (Massas) - Frequência: 45
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Condicionador (Higiene) - Frequência: 50
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Morango (Hortifruti) - Frequência: 85
+Maçã (Hortifruti) - Frequência: 80
+Queijo (Laticínios) - Frequência: 50
+Sabonete (Higiene) - Frequência: 30
+Carne Bovina (Carnes) - Frequência: 90
+Amaciante (Limpeza) - Frequência: 50
+Pipoca (Snacks) - Frequência: 70
+Banana (Hortifruti) - Frequência: 85
+Abacaxi (Hortifruti) - Frequência: 80
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+Chocolate (Snacks) - Frequência: 75
+
+Geração 7:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Gel de Banho (Higiene) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Frango (Carnes) - Frequência: 75
+Macarrão (Massas) - Frequência: 45
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Condicionador (Higiene) - Frequência: 50
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Milho (Grãos) - Frequência: 60
+Morango (Hortifruti) - Frequência: 85
+Maçã (Hortifruti) - Frequência: 80
+Queijo (Laticínios) - Frequência: 50
+Sabonete (Higiene) - Frequência: 30
+Carne Bovina (Carnes) - Frequência: 90
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Pipoca (Snacks) - Frequência: 70
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Molho Branco (Massas) - Frequência: 35
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 8:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Condicionador (Higiene) - Frequência: 50
+Peixe (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Maçã (Hortifruti) - Frequência: 80
+Morango (Hortifruti) - Frequência: 85
+Abacaxi (Hortifruti) - Frequência: 80
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Banana (Hortifruti) - Frequência: 85
+Sabonete (Higiene) - Frequência: 30
+Milho (Grãos) - Frequência: 60
+Gel de Banho (Higiene) - Frequência: 45
+Frango (Carnes) - Frequência: 75
+Presunto (Carnes) - Frequência: 75
+Carne Bovina (Carnes) - Frequência: 90
+Pipoca (Snacks) - Frequência: 70
+Queijo (Laticínios) - Frequência: 50
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 9:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Amaciante (Limpeza) - Frequência: 50
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Carne Bovina (Carnes) - Frequência: 90
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Condicionador (Higiene) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Sabão em Pó (Limpeza) - Frequência: 65
+Gel de Banho (Higiene) - Frequência: 45
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Queijo (Laticínios) - Frequência: 50
+Sabonete (Higiene) - Frequência: 30
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 10:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Gel de Banho (Higiene) - Frequência: 45
+Frango (Carnes) - Frequência: 75
+Macarrão (Massas) - Frequência: 45
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Queijo (Laticínios) - Frequência: 50
+Sabonete (Higiene) - Frequência: 30
+Carne Bovina (Carnes) - Frequência: 90
+Pipoca (Snacks) - Frequência: 70
+Molho Branco (Massas) - Frequência: 35
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 11:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Gel de Banho (Higiene) - Frequência: 45
+Frango (Carnes) - Frequência: 75
+Milho (Grãos) - Frequência: 60
+Carne Bovina (Carnes) - Frequência: 90
+Condicionador (Higiene) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Pipoca (Snacks) - Frequência: 70
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Queijo (Laticínios) - Frequência: 50
+Sabonete (Higiene) - Frequência: 30
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 12:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Gel de Banho (Higiene) - Frequência: 45
+Frango (Carnes) - Frequência: 75
+Milho (Grãos) - Frequência: 60
+Carne Bovina (Carnes) - Frequência: 90
+Condicionador (Higiene) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Pipoca (Snacks) - Frequência: 70
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Sabonete (Higiene) - Frequência: 30
+Queijo (Laticínios) - Frequência: 50
+Refrigerante (Bebidas) - Frequência: 70
+Suco (Bebidas) - Frequência: 65
+
+Geração 13:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Peixe (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Presunto (Carnes) - Frequência: 75
+Sabão em Pó (Limpeza) - Frequência: 65
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Queijo (Laticínios) - Frequência: 50
+Carne Bovina (Carnes) - Frequência: 90
+Frango (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 14:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Molho Branco (Massas) - Frequência: 35
+Carne Bovina (Carnes) - Frequência: 90
+Pipoca (Snacks) - Frequência: 70
+Macarrão (Massas) - Frequência: 45
+Sabonete (Higiene) - Frequência: 30
+Peixe (Carnes) - Frequência: 90
+Frango (Carnes) - Frequência: 75
+Presunto (Carnes) - Frequência: 75
+Queijo (Laticínios) - Frequência: 50
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 15:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Molho Branco (Massas) - Frequência: 35
+Carne Bovina (Carnes) - Frequência: 90
+Pipoca (Snacks) - Frequência: 70
+Macarrão (Massas) - Frequência: 45
+Sabonete (Higiene) - Frequência: 30
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Queijo (Laticínios) - Frequência: 50
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 16:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Molho Branco (Massas) - Frequência: 35
+Carne Bovina (Carnes) - Frequência: 90
+Peixe (Carnes) - Frequência: 90
+Sabonete (Higiene) - Frequência: 30
+Macarrão (Massas) - Frequência: 45
+Pipoca (Snacks) - Frequência: 70
+Frango (Carnes) - Frequência: 75
+Presunto (Carnes) - Frequência: 75
+Queijo (Laticínios) - Frequência: 50
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 17:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Molho Branco (Massas) - Frequência: 35
+Carne Bovina (Carnes) - Frequência: 90
+Pipoca (Snacks) - Frequência: 70
+Macarrão (Massas) - Frequência: 45
+Sabonete (Higiene) - Frequência: 30
+Peixe (Carnes) - Frequência: 90
+Frango (Carnes) - Frequência: 75
+Presunto (Carnes) - Frequência: 75
+Queijo (Laticínios) - Frequência: 50
+Refrigerante (Bebidas) - Frequência: 70
+Suco (Bebidas) - Frequência: 65
+
+Geração 18:
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Gel de Banho (Higiene) - Frequência: 45
+Lasanha (Massas) - Frequência: 45
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Sabão em Pó (Limpeza) - Frequência: 65
+Lustra Móveis (Limpeza) - Frequência: 65
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Frango (Carnes) - Frequência: 75
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Pipoca (Snacks) - Frequência: 70
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Sabonete (Higiene) - Frequência: 30
+Queijo (Laticínios) - Frequência: 50
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 19:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Sabão em Pó (Limpeza) - Frequência: 65
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Frango (Carnes) - Frequência: 75
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Pipoca (Snacks) - Frequência: 70
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Sabonete (Higiene) - Frequência: 30
+Queijo (Laticínios) - Frequência: 50
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 20:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Condicionador (Higiene) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Milho (Grãos) - Frequência: 60
+Pipoca (Snacks) - Frequência: 70
+Sabonete (Higiene) - Frequência: 30
+Queijo (Laticínios) - Frequência: 50
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 21:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Condicionador (Higiene) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Milho (Grãos) - Frequência: 60
+Pipoca (Snacks) - Frequência: 70
+Sabonete (Higiene) - Frequência: 30
+Queijo (Laticínios) - Frequência: 50
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 22:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Condicionador (Higiene) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Milho (Grãos) - Frequência: 60
+Pipoca (Snacks) - Frequência: 70
+Sabonete (Higiene) - Frequência: 30
+Queijo (Laticínios) - Frequência: 50
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 23:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Condicionador (Higiene) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Milho (Grãos) - Frequência: 60
+Pipoca (Snacks) - Frequência: 70
+Sabonete (Higiene) - Frequência: 30
+Queijo (Laticínios) - Frequência: 50
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 24:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Queijo (Laticínios) - Frequência: 50
+Manteiga (Laticínios) - Frequência: 40
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Condicionador (Higiene) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Milho (Grãos) - Frequência: 60
+Pipoca (Snacks) - Frequência: 70
+Sabonete (Higiene) - Frequência: 30
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 25:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Queijo (Laticínios) - Frequência: 50
+Manteiga (Laticínios) - Frequência: 40
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Condicionador (Higiene) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Milho (Grãos) - Frequência: 60
+Pipoca (Snacks) - Frequência: 70
+Sabonete (Higiene) - Frequência: 30
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 26:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Queijo (Laticínios) - Frequência: 50
+Manteiga (Laticínios) - Frequência: 40
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Condicionador (Higiene) - Frequência: 50
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Milho (Grãos) - Frequência: 60
+Pipoca (Snacks) - Frequência: 70
+Sabonete (Higiene) - Frequência: 30
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 27:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Queijo (Laticínios) - Frequência: 50
+Manteiga (Laticínios) - Frequência: 40
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 28:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Queijo (Laticínios) - Frequência: 50
+Manteiga (Laticínios) - Frequência: 40
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 29:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Queijo (Laticínios) - Frequência: 50
+Manteiga (Laticínios) - Frequência: 40
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 30:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Queijo (Laticínios) - Frequência: 50
+Manteiga (Laticínios) - Frequência: 40
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 31:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Queijo (Laticínios) - Frequência: 50
+Manteiga (Laticínios) - Frequência: 40
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 32:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Queijo (Laticínios) - Frequência: 50
+Manteiga (Laticínios) - Frequência: 40
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 33:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 34:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 35:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Pipoca (Snacks) - Frequência: 70
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 36:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 37:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 38:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 39:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 40:
+Desodorante (Higiene) - Frequência: 30
+Perfume (Higiene) - Frequência: 45
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Detergente (Limpeza) - Frequência: 50
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 41:
+Desodorante (Higiene) - Frequência: 30
+Detergente (Limpeza) - Frequência: 50
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Perfume (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 42:
+Desodorante (Higiene) - Frequência: 30
+Detergente (Limpeza) - Frequência: 50
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Perfume (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 43:
+Desodorante (Higiene) - Frequência: 30
+Detergente (Limpeza) - Frequência: 50
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Perfume (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 44:
+Desodorante (Higiene) - Frequência: 30
+Detergente (Limpeza) - Frequência: 50
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Perfume (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Milho (Grãos) - Frequência: 60
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 45:
+Desodorante (Higiene) - Frequência: 30
+Detergente (Limpeza) - Frequência: 50
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Perfume (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 46:
+Desodorante (Higiene) - Frequência: 30
+Detergente (Limpeza) - Frequência: 50
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Perfume (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Milho (Grãos) - Frequência: 60
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 47:
+Desodorante (Higiene) - Frequência: 30
+Detergente (Limpeza) - Frequência: 50
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Perfume (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 48:
+Desodorante (Higiene) - Frequência: 30
+Detergente (Limpeza) - Frequência: 50
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Perfume (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 49:
+Desodorante (Higiene) - Frequência: 30
+Detergente (Limpeza) - Frequência: 50
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Perfume (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+
+Geração 50:
+Desodorante (Higiene) - Frequência: 30
+Detergente (Limpeza) - Frequência: 50
+Água Mineral (Bebidas) - Frequência: 50
+Chocolate (Snacks) - Frequência: 75
+Chips (Snacks) - Frequência: 70
+Biscoito (Snacks) - Frequência: 75
+Trigo (Grãos) - Frequência: 55
+Arroz (Grãos) - Frequência: 55
+Feijão (Grãos) - Frequência: 60
+Café (Bebidas) - Frequência: 55
+Perfume (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 45
+Pasta de Dente (Higiene) - Frequência: 45
+Queijo (Laticínios) - Frequência: 50
+Leite (Laticínios) - Frequência: 60
+Iogurte (Laticínios) - Frequência: 40
+Manteiga (Laticínios) - Frequência: 40
+Lustra Móveis (Limpeza) - Frequência: 65
+Lasanha (Massas) - Frequência: 45
+Molho de Tomate (Massas) - Frequência: 35
+Shampoo (Higiene) - Frequência: 50
+Gel de Banho (Higiene) - Frequência: 45
+Condicionador (Higiene) - Frequência: 50
+Milho (Grãos) - Frequência: 60
+Maçã (Hortifruti) - Frequência: 80
+Abacaxi (Hortifruti) - Frequência: 80
+Banana (Hortifruti) - Frequência: 85
+Morango (Hortifruti) - Frequência: 85
+Amaciante (Limpeza) - Frequência: 50
+Sabão em Pó (Limpeza) - Frequência: 65
+Carne Bovina (Carnes) - Frequência: 90
+Macarrão (Massas) - Frequência: 45
+Molho Branco (Massas) - Frequência: 35
+Sabonete (Higiene) - Frequência: 30
+Pipoca (Snacks) - Frequência: 70
+Frango (Carnes) - Frequência: 75
+Peixe (Carnes) - Frequência: 90
+Presunto (Carnes) - Frequência: 75
+Suco (Bebidas) - Frequência: 65
+Refrigerante (Bebidas) - Frequência: 70
+

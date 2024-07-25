@@ -1,0 +1,41 @@
+name,category,initial_location,frequency
+Água Mineral,Bebidas,"(0, 0)",50
+Refrigerante,Bebidas,"(0, 1)",70
+Leite,Laticínios,"(1, 0)",60
+Iogurte,Laticínios,"(1, 1)",40
+Sabonete,Higiene,"(2, 0)",30
+Pasta de Dente,Higiene,"(2, 1)",45
+Maçã,Hortifruti,"(3, 0)",80
+Banana,Hortifruti,"(3, 1)",85
+Carne Bovina,Carnes,"(4, 0)",90
+Frango,Carnes,"(4, 1)",75
+Arroz,Grãos,"(5, 0)",55
+Feijão,Grãos,"(5, 1)",60
+Detergente,Limpeza,"(6, 0)",50
+Sabão em Pó,Limpeza,"(6, 1)",65
+Macarrão,Massas,"(7, 0)",45
+Molho de Tomate,Massas,"(7, 1)",35
+Biscoito,Snacks,"(8, 0)",75
+Chips,Snacks,"(8, 1)",70
+Shampoo,Higiene,"(9, 0)",50
+Condicionador,Higiene,"(9, 1)",45
+Café,Bebidas,"(10, 0)",55
+Suco,Bebidas,"(10, 1)",65
+Queijo,Laticínios,"(11, 0)",50
+Manteiga,Laticínios,"(11, 1)",40
+Desodorante,Higiene,"(12, 0)",30
+Perfume,Higiene,"(12, 1)",45
+Abacaxi,Hortifruti,"(13, 0)",80
+Morango,Hortifruti,"(13, 1)",85
+Peixe,Carnes,"(14, 0)",90
+Presunto,Carnes,"(14, 1)",75
+Trigo,Grãos,"(15, 0)",55
+Milho,Grãos,"(15, 1)",60
+Amaciante,Limpeza,"(16, 0)",50
+Lustra Móveis,Limpeza,"(16, 1)",65
+Lasanha,Massas,"(17, 0)",45
+Molho Branco,Massas,"(17, 1)",35
+Chocolate,Snacks,"(18, 0)",75
+Pipoca,Snacks,"(18, 1)",70
+Condicionador,Higiene,"(19, 0)",50
+Gel de Banho,Higiene,"(19, 1)",45

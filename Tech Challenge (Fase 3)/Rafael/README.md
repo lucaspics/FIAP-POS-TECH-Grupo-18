@@ -1,4 +1,4 @@
-# Fine-Tuning de Modelo BERT para Perguntas e Respostas
+# Fine-Tuning de Modelo BERT para Perguntas e Respostas TC3
 
 Este projeto utiliza um modelo BERT para realizar a tarefa de Perguntas e Respostas (Question Answering) com base em um conjunto de dados específico. O código abrange desde a importação de bibliotecas até o fine-tuning do modelo e a geração de respostas.
 

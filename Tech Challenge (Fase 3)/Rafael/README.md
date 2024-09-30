@@ -1,31 +1,33 @@
 # Fine-Tuning de Modelo BERT para Perguntas e Respostas TC3
 
-Este projeto utiliza um modelo BERT para realizar a tarefa de Perguntas e Respostas (Question Answering) com base em um conjunto de dados específico. O código abrange desde a importação de bibliotecas até o fine-tuning do modelo e a geração de respostas.
+Este projeto utiliza um modelo BERT (Bidirectional Encoder Representations from Transformers) para realizar a tarefa de Perguntas e Respostas (Question Answering). O modelo é ajustado (fine-tuned) em um conjunto de dados específico para melhorar a precisão na identificação das respostas corretas dentro de um contexto textual.
 
-### Tabela de Conteúdos
-- [Pré-requisitos](#pré-requisitos)
-- [Instalação](#instalação)
-- [Uso](#uso)
-  - [Carregar o Dataset](#carregar-o-dataset)
-  - [Tokenização e Adição de Posições](#tokenização-e-adicionamento-de-posições)
-  - [Fine-Tuning do Modelo](#fine-tuning-do-modelo)
-  - [Avaliação do Modelo](#avaliação-do-modelo)
-  - [Geração de Respostas](#geração-de-respostas)
-- [Exemplo de Execução](#exemplo-de-execução)
-- [Conclusão](#conclusão)
+## Integrantes do Grupo
+Rafael RM356292
+
+Lucas RM355916
+
+Lucca RM353944
+
+Paulo RM355014
+
+Fábio RM354943
+
+## Link para o vídeo de Apresentação
+https://youtu.be/m9YltBhwGvs?si=NPRQCScmcFEhaGgv
 
 ## Pré-requisitos
-
-Antes de executar o código, você precisará instalar algumas bibliotecas. Certifique-se de ter o Python 3.6 ou superior instalado.
+Antes de executar o código, é necessário garantir que você tem o ambiente de desenvolvimento correto. A versão mínima do Python requerida é 3.6.
 
 ### Bibliotecas Necessárias
 
-- \`torch\`
-- \`transformers\`
-- \`datasets\`
-- \`pandas\`
-- \`scikit-learn\`
-- \`json\`
+Para rodar este projeto, as seguintes bibliotecas são necessárias:
+-	torch: Biblioteca para operações com tensores e desenvolvimento de modelos de aprendizado profundo.
+-	transformers: Biblioteca do Hugging Face que fornece o modelo BERT, além de vários outros modelos de linguagem.
+-	datasets: Facilita o carregamento e manipulação de datasets.
+-	pandas: Usado para manipulação e análise de dados.
+-	scikit-learn: Usada para a avaliação do modelo, provendo métricas e ferramentas de aprendizado de máquina.
+-	json: Biblioteca padrão do Python para manipulação de dados em formato JSON.
 
 Você pode instalar as bibliotecas necessárias usando \`pip\`:
 

@@ -105,6 +105,9 @@ def analyze_video(video_path):
     # Fecha o vídeo após o processamento
     video_capture.release()
 
+    # Cria um resumo da análise de atividades contando cada atividade detectada
+    activity_summary = Counter(activities)
+
     # Cria um resumo da análise de emoções contando cada emoção detectada
     emotion_summary = {emotion: all_emotions.count(emotion) for emotion in set(all_emotions)}
 
@@ -112,11 +115,12 @@ def analyze_video(video_path):
     report = {
         "Total de frames analisados": total_frames,
         "Número de anomalias detectadas": anomaly_count,
-        "Resumo das atividades": activities,
+        "Resumo das atividades": dict(activity_summary),  # Converte para dicionário para exibição
         "Resumo das emoções": emotion_summary,
     }
 
     return report
+
 
 # Função para gerar gráficos baseados no relatório final
 def generate_report_visualization(report):

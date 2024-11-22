@@ -2,7 +2,7 @@
 
 Este projeto é uma aplicação em Python que realiza a análise de um vídeo, utilizando técnicas de reconhecimento facial, análise de expressões emocionais, detecção de atividades e geração de resumo de texto. O vídeo a ser analisado deve estar na raiz do projeto com o nome `video-tc4.mp4`.
 
-## Integrantes do Grupo
+## Integrantes do Grupo 18
 *Rafael RM356292*
 
 *Lucas RM355916*
@@ -14,7 +14,7 @@ Este projeto é uma aplicação em Python que realiza a análise de um vídeo, u
 *Fábio RM354943*
 
 ## Link para o vídeo de Apresentação
-https://youtu.be/ (Adicionar o link final da Apresentação)
+https://youtu.be/_Y-Z-02zWow
 
 ## Funcionalidades
 

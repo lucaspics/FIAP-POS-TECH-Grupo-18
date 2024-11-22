@@ -156,6 +156,40 @@ def detect_activities(frame):
     return results
 
 
+def generate_report(report):
+    # Exibe o relatório final
+    print("\n Relatório de Análise:")
+    print(f" Total de frames analisados: {report['Total de frames analisados']}")
+    print(f" Número de anomalias detectadas: {report['Número de anomalias detectadas']}")
+    print(" Resumo das atividades:", report['Resumo das atividades'])
+    print(" Resumo das emoções:", report['Resumo das emoções'])
+
+
+def generate_graphics(report):
+    # Gera os gráficos baseados nos resultados do relatório
+    plt.figure(figsize=(14, 6))
+
+    # Gráfico de barras para o resumo das emoções
+    emotion_names = list(report["Resumo das emoções"].keys())
+    emotion_counts = list(report["Resumo das emoções"].values())
+    plt.subplot(1, 2, 1)
+    plt.bar(emotion_names, emotion_counts, color='skyblue')
+    plt.title("Resumo das Emoções Detectadas")
+    plt.xlabel("Emoções")
+    plt.ylabel("Frequência")
+
+    # Gráfico de barras para o resumo das atividades e anomalias
+    activity_names = list(report["Resumo das atividades"].keys())
+    activity_counts = list(report["Resumo das atividades"].values())
+    plt.subplot(1, 2, 2)
+    plt.bar(activity_names, activity_counts, color='green')
+    plt.title("Resumo das Atividades detectadas")
+    plt.ylabel("Quantidade")
+
+    plt.tight_layout()
+    plt.show()
+
+
 # Função principal que analisa o vídeo
 def analyze_video(video_path):
     print("\n Loading video...")
@@ -278,32 +312,7 @@ if __name__ == "__main__":
     # Executa a análise no vídeo especificado
     report = analyze_video(VIDEO_PATH)
 
-    # Exibe o relatório final
-    print("\n Relatório de Análise:")
-    print(f" Total de frames analisados: {report['Total de frames analisados']}")
-    print(f" Número de anomalias detectadas: {report['Número de anomalias detectadas']}")
-    print(" Resumo das atividades:", report['Resumo das atividades'])
-    print(" Resumo das emoções:", report['Resumo das emoções'])
+    generate_report(report)
+    generate_graphics(report)
 
-    # Gera os gráficos baseados nos resultados do relatório
-    plt.figure(figsize=(14, 6))
-
-    # Gráfico de barras para o resumo das emoções
-    emotion_names = list(report["Resumo das emoções"].keys())
-    emotion_counts = list(report["Resumo das emoções"].values())
-    plt.subplot(1, 2, 1)
-    plt.bar(emotion_names, emotion_counts, color='skyblue')
-    plt.title("Resumo das Emoções Detectadas")
-    plt.xlabel("Emoções")
-    plt.ylabel("Frequência")
-
-    # Gráfico de barras para o resumo das atividades e anomalias
-    activity_names = list(report["Resumo das atividades"].keys())
-    activity_counts = list(report["Resumo das atividades"].values())
-    plt.subplot(1, 2, 2)
-    plt.bar(activity_names, activity_counts, color='green')
-    plt.title("Resumo das Atividades detectadas")
-    plt.ylabel("Quantidade")
-
-    plt.tight_layout()
-    plt.show()
+    

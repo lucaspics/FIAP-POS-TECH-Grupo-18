@@ -14,7 +14,7 @@ Este projeto é uma aplicação em Python que realiza a análise de um vídeo, u
 *Fábio RM354943*
 
 ## Link para o vídeo de Apresentação
-https://youtu.be/_Y-Z-02zWow
+https://youtu.be/9d5AnIqMf1o
 
 ## Funcionalidades
 

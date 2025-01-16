@@ -257,7 +257,13 @@ class SecurityCameraApp(QWidget):
         # Tempo do vídeo em milissegundos
         current_time = int(self.cap.get(cv2.CAP_PROP_POS_MSEC))
         alert_time = datetime.now().strftime("%H:%M:%S")
-        alert_frame_path = f"alert-{current_time}.png"
+        # Verifica se a pasta de logs existe, caso contrário, cria
+        log_dir = "logs"
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+        # Define o caminho do arquivo de alerta
+        alert_frame_path = os.path.join(log_dir, datetime.now().strftime("alert-%Y-%m-%d-%H-%M-%S.png"))
 
         cv2.imwrite(alert_frame_path, frame)
 

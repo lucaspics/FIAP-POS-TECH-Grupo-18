@@ -1,0 +1,8 @@
+# Ignorar pastas e arquivos gerados pelo PyInstaller
+build/
+dist/
+*.spec
+
+# Ignorar arquivos temporários do sistema
+*.pyc
+__pycache__/

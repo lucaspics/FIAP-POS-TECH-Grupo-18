@@ -12,6 +12,9 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from datetime import datetime
+import asyncio
+import aiosmtplib
+from qasync import QEventLoop
 
 class SecurityCameraApp(QWidget):
     def __init__(self):
@@ -207,15 +210,14 @@ class SecurityCameraApp(QWidget):
         self.logs_list.addItem(list_item)
         self.logs_list.setItemWidget(list_item, item_widget)
 
-        # Enviar e-mail
+        # Enviar e-mail de forma assíncrona
         subject = f"Security Cam - Alert - {alert_time}"
         body = f"""
         <h2>Security Camera Alert</h2>
         <p><b>Tempo:</b> {alert_time}</p>
         <p><b>Mensagem:</b> Alerta detectado.</p>
         """
-        send_email(subject, body, alert_frame_path)
-
+        asyncio.create_task(send_email(subject, body, alert_frame_path))
 
     def jump_to_alert(self, item):
         """Salta para 1 segundo antes do alerta."""
@@ -242,7 +244,7 @@ class SecurityCameraApp(QWidget):
             # Certifica-se de que o overlay ainda está visível
             self.overlay_label.raise_()
 
-def send_email(subject, body, attachment_path):
+async def send_email(subject, body, attachment_path):
     # Configurações do servidor SMTP
     EMAIL_ADDRESS = "fiap.iadev.2023.team18@gmail.com"  # Substitua pelo seu e-mail
     EMAIL_PASSWORD = "yymr taas eeuw yptz"  # Substitua pela sua senha
@@ -276,16 +278,23 @@ def send_email(subject, body, attachment_path):
 
     # Enviar o e-mail
     try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-            server.send_message(msg)
-            print(f"E-mail enviado com sucesso para {TO_EMAIL}.")
+        await aiosmtplib.send(
+            msg,
+            hostname=SMTP_SERVER,
+            port=SMTP_PORT,
+            start_tls=True,
+            username=EMAIL_ADDRESS,
+            password=EMAIL_PASSWORD,
+        )
+        print(f"E-mail enviado com sucesso para {TO_EMAIL}.")
     except Exception as e:
         print(f"Erro ao enviar o e-mail: {e}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    loop = QEventLoop(app)
+    asyncio.set_event_loop(loop)
     window = SecurityCameraApp()
     window.show()
-    sys.exit(app.exec_())
+    with loop:
+        loop.run_forever()

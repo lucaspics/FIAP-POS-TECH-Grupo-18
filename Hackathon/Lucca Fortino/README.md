@@ -1,50 +1,79 @@
-# Sistema de Câmera de Segurança
+# VisionGuard - Detecção de Objetos Cortantes
 
-Este projeto é um sistema de câmera de segurança desenvolvido em Python, utilizando a biblioteca PyQt5 para a interface gráfica e OpenCV para manipulação de vídeo.
+## Arquitetura do Sistema
 
-## Dependências
+O sistema é dividido em três componentes principais:
 
-Para executar este projeto, você precisará das seguintes bibliotecas Python:
+### 1. Sistema de Treinamento (Training Pipeline)
+- `training/`
+  - `dataset_manager.py`: Gerenciamento e preparação do dataset
+  - `model_trainer.py`: Treinamento do modelo YOLOv8
+  - `model_evaluator.py`: Avaliação de performance do modelo
+  - `config.py`: Configurações do treinamento
 
-- PyQt5
-- OpenCV
-- aiosmtplib
+### 2. API de Detecção (Detection API)
+- `api/`
+  - `main.py`: Aplicação FastAPI
+  - `detector.py`: Classe de detecção usando modelo treinado
+  - `alert_manager.py`: Gerenciamento de alertas
+  - `config.py`: Configurações da API
 
-Você pode instalar todas as dependências usando o seguinte comando:
+### 3. Frontend (Existente)
+- `src/`
+  - `main.py`: Interface PyQt5 existente
+  - `assets/`: Recursos da interface
 
+## Pipeline de Desenvolvimento
+
+1. **Preparação do Dataset**
+   - Coleta de imagens de objetos cortantes
+   - Anotação do dataset
+   - Augmentação de dados
+
+2. **Treinamento do Modelo**
+   - Utilização do YOLOv8 para detecção de objetos
+   - Fine-tuning para objetos cortantes
+   - Validação e ajustes
+
+3. **Desenvolvimento da API**
+   - Endpoints para processamento de frames
+   - Sistema de cache para performance
+   - Integração com sistema de alertas
+
+4. **Integração**
+   - Conexão do frontend com a API
+   - Sistema de logs e monitoramento
+   - Testes de performance
+
+## Tecnologias Utilizadas
+
+- **Machine Learning**: YOLOv8, PyTorch
+- **Backend**: FastAPI, OpenCV
+- **Frontend**: PyQt5
+- **Ferramentas**: Docker, Redis (cache)
+
+## Configuração do Ambiente
+
+1. Instale as dependências:
 ```bash
-pip install PyQt5 opencv-python aiosmtplib
+pip install -r requirements.txt
 ```
 
-## Gerando o Executável
+2. Configure as variáveis de ambiente:
+```bash
+cp .env.example .env
+```
 
-Para gerar um arquivo executável (.exe) do projeto, siga os passos abaixo:
+3. Execute o sistema de treinamento:
+```bash
+python -m training.model_trainer
+```
 
-1. **Instale o PyInstaller**: Certifique-se de que o PyInstaller está instalado no seu ambiente Python. Caso não esteja, instale-o com o comando:
+4. Inicie a API:
+```bash
+uvicorn api.main:app --reload
+```
 
-   ```bash
-   pip install pyinstaller
-   ```
-
-2. **Crie o Executável**: Navegue até o diretório do projeto e execute o seguinte comando para gerar o executável:
-
-   ```bash
-   python -m PyInstaller --onefile --windowed src/main.py
-   ```
-
-   O executável será gerado na pasta `dist` dentro do diretório do projeto.
-
-## Estrutura do Projeto
-
-- `src/main.py`: Arquivo principal do projeto que contém a lógica do sistema de câmera de segurança.
-- `logs/`: Diretório onde os arquivos de log são salvos.
-
-## Uso
-
-1. Execute o arquivo `main.exe` gerado na pasta `dist`.
-2. Configure o email para alertas na aba de configurações.
-3. Conecte-se a um vídeo para iniciar o monitoramento.
-
-## Contato
-
-Para mais informações, entre em contato com o time de desenvolvimento em fiap.iadev.2023.team18@gmail.com.
+5. Execute o frontend:
+```bash
+python src/main.py

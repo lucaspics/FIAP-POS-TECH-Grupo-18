@@ -1,0 +1,38 @@
+# Configurações de Treinamento YOLOv8 para Teste Rápido
+
+# Diretórios
+model_dir: "models"
+
+# Parâmetros de Treinamento
+epochs: 2  # Reduzido para teste rápido
+image_size: 320  # Reduzido para processamento mais rápido
+batch_size: 4  # Reduzido para CPU
+device: "cpu"  # Forçar uso de CPU
+num_workers: 2  # Reduzido para CPU
+patience: 2  # Reduzido para teste rápido
+
+# Otimizador
+optimizer: "SGD"
+learning_rate: 0.01
+weight_decay: 0.0005
+warmup_epochs: 1  # Reduzido para teste rápido
+
+# Pesos das Losses
+box_loss_weight: 7.5
+cls_loss_weight: 0.5
+dfl_loss_weight: 1.5
+
+# Augmentação
+close_mosaic: 1  # Reduzido para teste rápido
+
+# Salvamento
+save_period: 1  # Salvar a cada época para testar checkpoints
+cache: true
+
+# Thresholds de Detecção
+conf_thres: 0.25
+iou_thres: 0.45
+
+# Classes
+classes:
+  - knife  # Apenas uma classe: faca

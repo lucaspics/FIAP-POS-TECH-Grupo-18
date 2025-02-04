@@ -1,0 +1,38 @@
+# Configurações de Treinamento YOLOv8 para Treinamento Completo
+
+# Diretórios
+model_dir: "models"
+
+# Parâmetros de Treinamento
+epochs: 100  # Aumentado para treinamento completo
+image_size: 640  # Tamanho padrão do YOLOv8
+batch_size: 8  # Otimizado para CPU
+device: "cpu"  # Forçar uso de CPU
+num_workers: 4  # Aumentado para melhor utilização
+patience: 20  # Aumentado para permitir mais tempo de convergência
+
+# Otimizador
+optimizer: "SGD"
+learning_rate: 0.01
+weight_decay: 0.0005
+warmup_epochs: 3  # Aumentado para melhor estabilidade inicial
+
+# Pesos das Losses
+box_loss_weight: 7.5
+cls_loss_weight: 0.5
+dfl_loss_weight: 1.5
+
+# Augmentação
+close_mosaic: 10  # Aumentado para melhor estabilidade final
+
+# Salvamento
+save_period: 10  # Salvar a cada 10 épocas
+cache: true  # Habilitar cache para melhor performance
+
+# Thresholds de Detecção
+conf_thres: 0.25
+iou_thres: 0.45
+
+# Classes
+classes:
+  - knife  # Apenas uma classe: faca

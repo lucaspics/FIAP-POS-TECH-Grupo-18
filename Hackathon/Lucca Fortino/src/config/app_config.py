@@ -39,3 +39,27 @@ OVERLAY_PATH = "src/assets/images/cam_overlay.png"
 
 # Configurações de alerta
 MIN_TIME_BETWEEN_ALERTS = 5000  # Milissegundos (5 segundos)
+
+# Configurações de níveis de confiança
+CONFIDENCE_LEVELS = {
+    "HIGH": 0.75,    # 75%
+    "MEDIUM": 0.50,  # 50%
+    "LOW": 0.15      # 15%
+}
+
+# Configurações de confirmações necessárias
+REQUIRED_DETECTIONS = {
+    "HIGH": 1,    # Imediato
+    "MEDIUM": 3,  # 3 detecções
+    "LOW": 5      # 5 detecções
+}
+
+# Janelas de tempo para confirmações (em segundos)
+DETECTION_WINDOWS = {
+    "HIGH": 0,    # Imediato
+    "MEDIUM": 5,  # 5 segundos
+    "LOW": 10     # 10 segundos
+}
+
+# Configurações de buffer de imagens
+MAX_BUFFER_IMAGES = 5  # Número máximo de imagens a serem enviadas no email

@@ -29,9 +29,19 @@ class AlertManager:
         self.alerts_dir = Path("logs/alerts")
         self.alerts_dir.mkdir(parents=True, exist_ok=True)
 
+        # Inicializar fila de alertas
+        self.alert_queue = asyncio.Queue()
+        
+        # Flag para controle do worker
+        self.is_running = True
+        
+        # Iniciar worker de processamento de alertas
+        self.worker_task = asyncio.create_task(self._process_alert_queue())
+        self.logger.info("Worker de processamento de alertas iniciado")
+
     async def send_alert(self, image: np.ndarray, detections: List[Dict]):
         """
-        Envia alerta com detecções.
+        Adiciona alerta à fila de processamento.
         
         Args:
             image: Imagem numpy array (BGR)
@@ -41,49 +51,97 @@ class AlertManager:
         alert_id = f"alert_{timestamp.strftime('%Y%m%d_%H%M%S')}"
         
         try:
-            # Criar tarefas assíncronas para salvar arquivos
-            save_tasks = []
-            
-            # Tarefa para salvar imagem
+            # Salvar imagem e dados do alerta
             image_path = self.alerts_dir / f"{alert_id}.jpg"
-            save_tasks.append(
-                asyncio.to_thread(cv2.imwrite, str(image_path), image)
-            )
+            await asyncio.to_thread(cv2.imwrite, str(image_path), image)
             
-            # Tarefa para salvar JSON
             alert_data = {
                 "timestamp": timestamp.isoformat(),
                 "detections": detections,
                 "image_path": str(image_path)
             }
+            
             json_path = self.alerts_dir / f"{alert_id}.json"
-            save_tasks.append(
-                self._save_json(json_path, alert_data)
-            )
+            await self._save_json(json_path, alert_data)
             
-            # Executar salvamentos em paralelo
-            await asyncio.gather(*save_tasks)
-            
-            # Iniciar envio de email em background com timeout
-            email_task = asyncio.create_task(
-                self._send_email_alert(alert_id, image_path, detections)
-            )
-            
-            # Definir timeout para o email (10 segundos)
-            try:
-                await asyncio.wait_for(email_task, timeout=10.0)
-                self.logger.info(f"Email enviado com sucesso para alerta {alert_id}")
-            except asyncio.TimeoutError:
-                self.logger.warning(f"Timeout no envio do email para alerta {alert_id}")
-            except Exception as email_err:
-                self.logger.error(f"Erro no envio do email para alerta {alert_id}: {str(email_err)}")
+            # Adicionar à fila de processamento
+            await self.alert_queue.put({
+                "alert_id": alert_id,
+                "image_path": image_path,
+                "detections": detections
+            })
             
             self.total_alerts += 1
-            self.logger.info(f"Alerta {alert_id} registrado com sucesso")
+            self.logger.info(f"Alerta {alert_id} adicionado à fila de processamento")
             
         except Exception as e:
             self.logger.error(f"Erro ao processar alerta {alert_id}: {str(e)}")
             # Não propagar o erro para não impactar o fluxo principal
+
+    async def _process_alert_queue(self):
+        """Worker que processa a fila de alertas em background."""
+        while self.is_running:
+            try:
+                # Aguardar próximo alerta da fila com timeout
+                try:
+                    alert = await asyncio.wait_for(self.alert_queue.get(), timeout=1.0)
+                except asyncio.TimeoutError:
+                    # Timeout permite verificar a flag is_running periodicamente
+                    continue
+                
+                try:
+                    # Processar alerta com timeout
+                    async with asyncio.timeout(10):  # 10 segundos de timeout
+                        await self._send_email_alert(
+                            alert["alert_id"],
+                            alert["image_path"],
+                            alert["detections"]
+                        )
+                        self.logger.info(f"Email enviado com sucesso para alerta {alert['alert_id']}")
+                
+                except asyncio.TimeoutError:
+                    self.logger.warning(f"Timeout no envio do email para alerta {alert['alert_id']}")
+                except Exception as e:
+                    self.logger.error(f"Erro no envio do email para alerta {alert['alert_id']}: {str(e)}")
+                finally:
+                    # Marcar tarefa como concluída
+                    self.alert_queue.task_done()
+                    
+            except Exception as e:
+                self.logger.error(f"Erro no processamento da fila de alertas: {str(e)}")
+                # Aguardar um pouco antes de tentar novamente
+                await asyncio.sleep(1)
+
+        self.logger.info("Worker de processamento de alertas finalizado")
+
+    async def cleanup(self):
+        """
+        Limpa recursos e encerra o worker graciosamente.
+        Aguarda o processamento dos alertas pendentes.
+        """
+        self.logger.info("Iniciando limpeza do AlertManager...")
+        
+        # Sinalizar para o worker parar
+        self.is_running = False
+        
+        try:
+            # Aguardar processamento dos alertas pendentes
+            if not self.alert_queue.empty():
+                self.logger.info("Aguardando processamento dos alertas pendentes...")
+                await self.alert_queue.join()
+            
+            # Cancelar a task do worker
+            if not self.worker_task.done():
+                self.worker_task.cancel()
+                try:
+                    await self.worker_task
+                except asyncio.CancelledError:
+                    pass
+            
+            self.logger.info("Limpeza do AlertManager concluída")
+            
+        except Exception as e:
+            self.logger.error(f"Erro durante limpeza do AlertManager: {str(e)}")
 
     async def _save_json(self, path: Path, data: dict):
         """Salva dados JSON de forma assíncrona."""
@@ -123,6 +181,8 @@ class AlertManager:
             # Enviar email
             server.send_message(msg)
             server.quit()
+            
+            self.logger.info(f"Alerta {alert_id} registrado com sucesso")
             
         except Exception as e:
             self.logger.error(f"Erro ao enviar email de alerta: {str(e)}")

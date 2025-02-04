@@ -88,6 +88,18 @@ async def startup_event():
         logger.error(f"Modelo não encontrado: {settings.model_path}")
         raise RuntimeError("Modelo de detecção não encontrado")
 
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Evento de finalização da API."""
+    logger.info("Finalizando API VisionGuard...")
+    
+    # Limpar recursos do AlertManager
+    try:
+        await alert_manager.cleanup()
+        logger.info("AlertManager finalizado com sucesso")
+    except Exception as e:
+        logger.error(f"Erro ao finalizar AlertManager: {str(e)}")
+
 @app.get("/")
 async def root():
     """Endpoint raiz para verificação de status."""

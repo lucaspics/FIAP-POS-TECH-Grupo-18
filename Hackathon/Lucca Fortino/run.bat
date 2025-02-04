@@ -7,7 +7,7 @@ cd /d "%SCRIPT_DIR%"
 
 cls
 echo +====================================+
-echo |          VisionGuard System        |
+echo ^|          VisionGuard System        ^|
 echo +====================================+
 echo.
 echo Deseja instalar/atualizar as dependencias?
@@ -18,22 +18,12 @@ echo [N] - Para pular instalacao e iniciar o sistema
 echo.
 echo.
 
-rem Timer de 15 segundos para resposta
-choice /c SN /t 15 /d N /m "Digite S ou N"
+set /p opcao="Digite S ou N: "
 
-if errorlevel 2 (
+if /i "%opcao%"=="S" (
     cls
     echo +====================================+
-    echo ^|          VisionGuard System          ^|
-    echo +====================================+
-    echo.
-    echo Instalacao ignorada.
-    echo.
-    goto :START_SYSTEM
-) else (
-    cls
-    echo +====================================+
-    echo ^|          VisionGuard System          ^|
+    echo ^|          VisionGuard System        ^|
     echo +====================================+
     echo.
     echo Iniciando instalacao de dependencias...
@@ -45,6 +35,15 @@ if errorlevel 2 (
         pause
         exit /b 1
     )
+) else (
+    cls
+    echo +====================================+
+    echo ^|          VisionGuard System        ^|
+    echo +====================================+
+    echo.
+    echo Instalacao ignorada.
+    echo.
+    goto :START_SYSTEM
 )
 
 :START_SYSTEM

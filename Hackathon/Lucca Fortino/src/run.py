@@ -3,10 +3,10 @@ import sys
 import time
 import os
 import signal
+import socket
 from pathlib import Path
 import logging
 import pkg_resources
-import re
 
 # Configurar logging
 logging.basicConfig(
@@ -15,19 +15,25 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def is_port_in_use(port):
+    """Verifica se uma porta está em uso."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('localhost', port)) == 0
+
 class VisionGuardRunner:
     def __init__(self):
         self.api_process = None
         self.frontend_process = None
         self.processes = []
-        self.api_ready = False
+        self.api_port = 8000
+        self.startup_timeout = 30  # segundos
 
     def check_dependencies(self):
         """Verifica se todas as dependências estão instaladas."""
         logger.info("Verificando dependências...")
         required = {
             'uvicorn', 'fastapi', 'ultralytics', 'opencv-python',
-            'pyqt5', 'qasync', 'aiohttp'
+            'pyqt5', 'requests', 'python-multipart'
         }
         installed = {pkg.key for pkg in pkg_resources.working_set}
         missing = required - installed
@@ -38,38 +44,38 @@ class VisionGuardRunner:
             return False
         return True
 
+    def wait_for_api(self, timeout):
+        """Aguarda a API ficar disponível."""
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            if self.api_process.poll() is not None:
+                raise RuntimeError("API falhou ao iniciar")
+            
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.connect(('localhost', self.api_port))
+                    logger.info("API está respondendo")
+                    return True
+            except (ConnectionRefusedError, socket.error):
+                time.sleep(1)
+        
+        raise TimeoutError("Timeout aguardando API inicializar")
+
     def start_api(self):
         """Inicia o servidor API."""
         try:
+            if is_port_in_use(self.api_port):
+                raise RuntimeError(f"Porta {self.api_port} já está em uso")
+
             logger.info("Iniciando API...")
-            # Usar python -m uvicorn em vez do comando direto
             self.api_process = subprocess.Popen(
-                [sys.executable, "-m", "uvicorn", "src.api.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=1,
-                universal_newlines=True
+                [sys.executable, "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", str(self.api_port)],
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == 'win32' else 0
             )
             self.processes.append(self.api_process)
             
-            # Aguardar até que a API esteja pronta
-            while not self.api_ready:
-                output = self.api_process.stderr.readline()
-                if "Uvicorn running on" in output:
-                    self.api_ready = True
-                    logger.info("API iniciada com sucesso em http://0.0.0.0:8000")
-                    break
-                elif "Error" in output or "ERROR" in output:
-                    if "Address already in use" in output:
-                        logger.error("Porta 8000 já está em uso. Encerrando...")
-                        self.cleanup()
-                        sys.exit(1)
-                    else:
-                        logger.error(f"Erro ao iniciar API: {output.strip()}")
-                        self.cleanup()
-                        sys.exit(1)
-                time.sleep(0.1)
+            # Aguarda API inicializar com timeout
+            self.wait_for_api(self.startup_timeout)
             
         except Exception as e:
             logger.error(f"Erro ao iniciar API: {str(e)}")
@@ -82,29 +88,14 @@ class VisionGuardRunner:
             logger.info("Iniciando Frontend...")
             self.frontend_process = subprocess.Popen(
                 [sys.executable, "src/main.py"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=1,
-                universal_newlines=True
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == 'win32' else 0
             )
             self.processes.append(self.frontend_process)
             
-            # Aguardar um pouco para verificar se o processo iniciou corretamente
+            # Verifica se o processo iniciou corretamente
             time.sleep(2)
-            
-            # Verificar se o processo ainda está rodando
             if self.frontend_process.poll() is not None:
-                # Processo já terminou, verificar se houve erro
-                error_output = self.frontend_process.stderr.read()
-                if error_output:
-                    logger.error(f"Erro ao iniciar Frontend:\n{error_output}")
-                    raise Exception(f"Frontend falhou ao iniciar: {error_output}")
-                output = self.frontend_process.stdout.read()
-                if output:
-                    logger.info(f"Saída do Frontend:\n{output}")
-            
-            logger.info("Frontend iniciado com sucesso")
+                raise RuntimeError("Frontend falhou ao iniciar")
             
         except Exception as e:
             logger.error(f"Erro ao iniciar Frontend: {str(e)}")
@@ -115,12 +106,18 @@ class VisionGuardRunner:
         """Limpa todos os processos ao encerrar."""
         logger.info("Encerrando processos...")
         for process in self.processes:
-            if process:
+            if process and process.poll() is None:
                 try:
                     if sys.platform == 'win32':
-                        process.kill()
+                        process.send_signal(signal.CTRL_BREAK_EVENT)
+                        time.sleep(1)
+                        if process.poll() is None:
+                            process.kill()
                     else:
-                        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                        process.terminate()
+                        time.sleep(1)
+                        if process.poll() is None:
+                            process.kill()
                 except Exception as e:
                     logger.error(f"Erro ao encerrar processo: {str(e)}")
 
@@ -145,24 +142,17 @@ class VisionGuardRunner:
             return False
         return True
 
-    def process_output(self, output, process_name):
-        """Processa e filtra a saída dos processos."""
-        if not output:
-            return
-            
-        # Filtrar mensagens de log comuns do Uvicorn
-        if any(msg in output for msg in [
-            "Will watch for changes",
-            "Uvicorn running on",
-            "StatReload"
-        ]):
-            return
-            
-        # Detectar erros reais
-        if "error" in output.lower() or "exception" in output.lower():
-            logger.error(f"{process_name}: {output.strip()}")
-        else:
-            logger.info(f"{process_name}: {output.strip()}")
+    def check_processes_health(self):
+        """Verifica a saúde dos processos em execução."""
+        if self.api_process and self.api_process.poll() is not None:
+            logger.error("API não está mais respondendo")
+            return False
+        
+        if self.frontend_process and self.frontend_process.poll() is not None:
+            logger.error("Frontend não está mais respondendo")
+            return False
+        
+        return True
 
     def run(self):
         """Inicia todo o sistema."""
@@ -193,28 +183,16 @@ class VisionGuardRunner:
             logger.info("Sistema VisionGuard iniciado com sucesso!")
             logger.info("Pressione Ctrl+C para encerrar...")
 
-            # Monitorar processos
+            # Loop principal com verificação de saúde
             while True:
-                # Verificar se algum processo terminou
-                if any(p.poll() is not None for p in self.processes):
-                    logger.error("Um dos processos terminou inesperadamente")
+                if not self.check_processes_health():
                     break
-
-                # Processar saídas
-                for p in self.processes:
-                    if p.stdout:
-                        output = p.stdout.readline()
-                        if output:
-                            self.process_output(output, "API" if p == self.api_process else "Frontend")
-                    if p.stderr:
-                        error = p.stderr.readline()
-                        if error:
-                            self.process_output(error, "API" if p == self.api_process else "Frontend")
-
-                time.sleep(0.1)
+                time.sleep(1)
 
         except KeyboardInterrupt:
-            logger.info("Encerrando sistema...")
+            logger.info("Encerramento solicitado pelo usuário...")
+        except Exception as e:
+            logger.error(f"Erro inesperado: {str(e)}")
         finally:
             self.cleanup()
 

@@ -119,7 +119,7 @@ class VideoTab(QWidget):
         self.left_layout.addWidget(self.time_label)
         
         # Botão de conexão
-        self.connect_button = QPushButton("Conectar à Câmera")
+        self.connect_button = QPushButton("Conectar Fonte de Vídeo")
         self.connect_button.setStyleSheet("background-color: #4CAF50; color: white; font-size: 14px;")
         self.connect_button.clicked.connect(self.parent.connect_camera if self.parent else None)
         self.left_layout.addWidget(self.connect_button)
@@ -129,7 +129,7 @@ class VideoTab(QWidget):
         
     def setup_video_area(self):
         """Configura a área de exibição do vídeo."""
-        self.video_label = QLabel("Feed da câmera aparecerá aqui")
+        self.video_label = QLabel("Feed de vídeo aparecerá aqui")
         self.video_label.setFixedSize(VIDEO_WIDTH, VIDEO_HEIGHT)
         self.video_label.setStyleSheet("background-color: black;")
         self.left_layout.addWidget(self.video_label)
@@ -258,6 +258,9 @@ class VideoTab(QWidget):
     def enable_controls(self, enabled=True):
         """Habilita ou desabilita os controles de vídeo."""
         self.play_pause_button.setEnabled(enabled)
-        self.rewind_button.setEnabled(enabled)
-        self.forward_button.setEnabled(enabled)
+        
+        # Só habilita os controles de navegação se não for câmera
+        is_camera = self.parent.is_camera if self.parent else False
+        self.rewind_button.setEnabled(enabled and not is_camera)
+        self.forward_button.setEnabled(enabled and not is_camera)
         self.connect_button.setEnabled(not enabled)  # Inverso dos outros

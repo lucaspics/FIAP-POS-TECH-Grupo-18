@@ -8,6 +8,29 @@ import logging
 from pathlib import Path
 import asyncio
 import torch
+from torch.serialization import add_safe_globals, safe_globals
+from ultralytics.nn.tasks import DetectionModel
+from torch.nn.modules.container import Sequential
+from ultralytics.nn.modules.conv import Conv
+from ultralytics.nn.modules.block import C2f, Bottleneck, C3, C2, SPPF, C3TR
+from ultralytics.nn.modules.head import Detect
+from torch.nn.modules.conv import Conv2d
+import functools
+
+# Lista de todas as classes necessárias para carregar o modelo
+SAFE_CLASSES = [
+    DetectionModel,
+    Sequential,
+    Conv,
+    C2f,
+    Bottleneck,
+    C3,
+    C2,
+    SPPF,
+    C3TR,
+    Detect,
+    Conv2d
+]
 
 class ObjectDetector:
     def __init__(self, model_path: str):
@@ -23,10 +46,19 @@ class ObjectDetector:
         self.total_detections = 0
         
         try:
-            self.model = YOLO(model_path)
-            self.classes = self.model.names
-            self.logger.info(f"Modelo carregado com sucesso: {model_path}")
-            self.logger.info(f"Classes disponíveis: {self.classes}")
+            # Adicionar classes necessárias aos globals seguros do PyTorch
+            with safe_globals(SAFE_CLASSES):
+                # Forçar carregamento sem weights_only
+                original_load = torch.load
+                torch.load = lambda f, *args, **kwargs: original_load(f, weights_only=False, *args, **kwargs)
+                
+                try:
+                    self.model = YOLO(model_path)
+                    self.classes = self.model.names
+                    self.logger.info(f"Modelo carregado com sucesso: {model_path}")
+                    self.logger.info(f"Classes disponíveis: {self.classes}")
+                finally:
+                    torch.load = original_load
             
             # Realizar warmup do modelo
             self.logger.info("Iniciando warmup do modelo...")

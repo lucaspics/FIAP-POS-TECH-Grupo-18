@@ -8,6 +8,12 @@ from pathlib import Path
 import logging
 import pkg_resources
 
+# Adiciona o diretório raiz ao PYTHONPATH
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(current_dir)
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
+
 # Configurar logging
 logging.basicConfig(
     level=logging.INFO,
@@ -68,8 +74,12 @@ class VisionGuardRunner:
                 raise RuntimeError(f"Porta {self.api_port} já está em uso")
 
             logger.info("Iniciando API...")
+            env = os.environ.copy()
+            env["PYTHONPATH"] = root_dir + os.pathsep + env.get("PYTHONPATH", "")
+            
             self.api_process = subprocess.Popen(
                 [sys.executable, "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", str(self.api_port)],
+                env=env,
                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == 'win32' else 0
             )
             self.processes.append(self.api_process)
@@ -86,8 +96,12 @@ class VisionGuardRunner:
         """Inicia a interface gráfica."""
         try:
             logger.info("Iniciando Frontend...")
+            env = os.environ.copy()
+            env["PYTHONPATH"] = root_dir + os.pathsep + env.get("PYTHONPATH", "")
+            
             self.frontend_process = subprocess.Popen(
-                [sys.executable, "src/main.py"],
+                [sys.executable, os.path.join("src", "main.py")],
+                env=env,
                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == 'win32' else 0
             )
             self.processes.append(self.frontend_process)
@@ -124,17 +138,17 @@ class VisionGuardRunner:
     def verify_files(self):
         """Verifica se todos os arquivos necessários existem."""
         required_files = [
-            "src/api/main.py",
-            "src/api/detector.py",
-            "src/api/alert_manager.py",
-            "src/api/config.py",
-            "src/main.py",
+            os.path.join("src", "api", "main.py"),
+            os.path.join("src", "api", "detector.py"),
+            os.path.join("src", "api", "alert_manager.py"),
+            os.path.join("src", "api", "config.py"),
+            os.path.join("src", "main.py"),
             "requirements.txt"
         ]
         
         missing_files = []
         for file in required_files:
-            if not Path(file).exists():
+            if not os.path.exists(os.path.join(root_dir, file)):
                 missing_files.append(file)
         
         if missing_files:
@@ -160,7 +174,7 @@ class VisionGuardRunner:
             print("""
 ╔══════════════════════════════════════╗
 ║          VisionGuard System          ║
-║    Detecção de Objetos Cortantes    ║
+║    Detecção de Objetos Cortantes     ║
 ╚══════════════════════════════════════╝
             """)
 
@@ -174,7 +188,7 @@ class VisionGuardRunner:
 
             # Criar diretórios necessários
             for dir_path in ["logs", "models", "data"]:
-                Path(dir_path).mkdir(exist_ok=True)
+                os.makedirs(os.path.join(root_dir, dir_path), exist_ok=True)
 
             # Iniciar componentes
             self.start_api()

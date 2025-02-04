@@ -2,8 +2,9 @@ import os
 import cv2
 import json
 import shutil
+import platform
 from datetime import datetime
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QTabWidget, QFileDialog
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QTabWidget, QFileDialog, QMessageBox
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QImage, QPixmap
 from config.logging_config import logger
@@ -14,6 +15,7 @@ from config.app_config import (
 from workers.analysis_worker import AnalysisWorker
 from ui.video_tab import VideoTab
 from ui.settings_tab import SettingsTab
+from ui.source_dialog import VideoSourceDialog
 from utils.video_utils import resize_frame, bgr_to_rgb
 
 class SecurityCameraApp(QWidget):
@@ -32,6 +34,7 @@ class SecurityCameraApp(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.is_playing = False
+        self.is_camera = False
         
         # Variáveis de análise
         self.analysis_interval = DEFAULT_ANALYSIS_INTERVAL
@@ -181,38 +184,79 @@ class SecurityCameraApp(QWidget):
                     
         except Exception as e:
             logger.error(f"Erro ao verificar novos alertas: {str(e)}")
-        
+            
     def connect_camera(self):
         """Conecta à fonte de vídeo."""
-        options = QFileDialog.Options()
-        self.video_path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Selecione o vídeo",
-            "",
-            "Arquivos de Vídeo (*.mp4 *.avi *.mov)",
-            options=options
-        )
-        
-        if self.video_path:
-            self.cap = cv2.VideoCapture(self.video_path)
-            if self.cap.isOpened():
-                self.video_tab.enable_controls(True)
-                logger.info(f"Vídeo carregado: {self.video_path}")
-                self.clear_alerts()  # Limpa alertas ao conectar
-                self.setup_alert_timer()  # Inicia monitoramento
-                self.toggle_play_pause()  # Inicia reprodução
-            else:
-                logger.error("Erro ao carregar o vídeo.")
+        dialog = VideoSourceDialog(self)
+        if dialog.exec_():
+            if dialog.source_type == "camera":
+                camera_id = dialog.get_camera_id()
+                logger.info(f"Tentando conectar à câmera {camera_id}")
                 
+                try:
+                    # Usa o backend padrão do OpenCV
+                    self.cap = cv2.VideoCapture(camera_id)
+                    if self.cap.isOpened():
+                        # Tenta configurar a resolução
+                        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+                        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+                        self.cap.set(cv2.CAP_PROP_FPS, 30)
+                        
+                        # Tenta ler um frame para confirmar que está funcionando
+                        ret, frame = self.cap.read()
+                        if not ret or frame is None:
+                            raise Exception("Não foi possível ler frame da câmera")
+                            
+                        self.is_camera = True
+                        self.video_tab.enable_controls(True)
+                        logger.info(f"Câmera {camera_id} conectada com sucesso")
+                        self.clear_alerts()
+                        self.setup_alert_timer()
+                        self.toggle_play_pause()
+                    else:
+                        raise Exception("Não foi possível abrir a câmera")
+                        
+                except Exception as e:
+                    logger.error(f"Erro ao conectar à câmera {camera_id}: {str(e)}")
+                    if self.cap:
+                        self.cap.release()
+                        self.cap = None
+                    QMessageBox.critical(self, "Erro", f"Não foi possível conectar à câmera: {str(e)}")
+                    
+            else:
+                options = QFileDialog.Options()
+                self.video_path, _ = QFileDialog.getOpenFileName(
+                    self,
+                    "Selecione o vídeo",
+                    "",
+                    "Arquivos de Vídeo (*.mp4 *.avi *.mov)",
+                    options=options
+                )
+                
+                if self.video_path:
+                    self.cap = cv2.VideoCapture(self.video_path)
+                    self.is_camera = False
+                    if self.cap.isOpened():
+                        self.video_tab.enable_controls(True)
+                        logger.info(f"Vídeo carregado: {self.video_path}")
+                        self.clear_alerts()
+                        self.setup_alert_timer()
+                        self.toggle_play_pause()
+                    else:
+                        logger.error("Erro ao carregar o vídeo.")
+                        QMessageBox.critical(self, "Erro", "Não foi possível carregar o vídeo.")
+                        
     def disconnect_camera(self):
         """Desconecta a fonte de vídeo."""
         if self.cap:
             self.cap.release()
             self.cap = None
+            self.video_path = None
+            self.is_camera = False
             self.video_tab.enable_controls(False)
-            self.stop_alert_timer()  # Para monitoramento
-            self.clear_alerts()  # Limpa alertas ao desconectar
-            logger.info("Câmera desconectada")
+            self.stop_alert_timer()
+            self.clear_alerts()
+            logger.info("Fonte de vídeo desconectada")
                 
     def toggle_play_pause(self):
         """Alterna entre play e pause."""
@@ -226,7 +270,7 @@ class SecurityCameraApp(QWidget):
         
     def rewind_video(self):
         """Retrocede o vídeo em 5 segundos."""
-        if not self.cap:
+        if not self.cap or self.is_camera:
             return
         current_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
         target_frame = max(0, current_frame - 150)  # 5 segundos (30 FPS * 5)
@@ -234,7 +278,7 @@ class SecurityCameraApp(QWidget):
         
     def forward_video(self):
         """Avança o vídeo em 5 segundos."""
-        if not self.cap:
+        if not self.cap or self.is_camera:
             return
         current_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
         total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
@@ -248,10 +292,15 @@ class SecurityCameraApp(QWidget):
             
         ret, frame = self.cap.read()
         if not ret:
-            logger.info("Fim do vídeo.")
-            self.timer.stop()
-            self.is_playing = False
-            self.video_tab.play_pause_button.setText("Play")
+            if self.is_camera:
+                logger.error("Erro ao ler frame da câmera")
+                self.disconnect_camera()
+                QMessageBox.warning(self, "Aviso", "Conexão com a câmera foi perdida.")
+            else:
+                logger.info("Fim do vídeo.")
+                self.timer.stop()
+                self.is_playing = False
+                self.video_tab.play_pause_button.setText("Play")
             return
             
         # Processar frame
@@ -260,8 +309,9 @@ class SecurityCameraApp(QWidget):
         self.video_tab.update_video_frame(frame)
         
         # Atualizar tempo
-        self.current_video_time = int(self.cap.get(cv2.CAP_PROP_POS_MSEC))
-        self.video_tab.update_time(self.current_video_time)
+        if not self.is_camera:
+            self.current_video_time = int(self.cap.get(cv2.CAP_PROP_POS_MSEC))
+            self.video_tab.update_time(self.current_video_time)
         
         # Incrementar contador e verificar necessidade de análise
         self.current_frame_count += 1
@@ -316,7 +366,7 @@ class SecurityCameraApp(QWidget):
         
     def jump_to_alert(self, item):
         """Salta para um momento específico do vídeo."""
-        if not self.cap:
+        if not self.cap or self.is_camera:
             return
             
         alert_time = item.data(0)

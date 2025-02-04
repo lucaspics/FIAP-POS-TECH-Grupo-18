@@ -1,25 +1,54 @@
 @echo off
-echo Verificando ambiente Python...
+setlocal EnableDelayedExpansion
 
-python --version >nul 2>&1
-if errorlevel 1 (
-    echo Python nao encontrado! Por favor, instale o Python e adicione ao PATH.
-    pause
-    exit /b 1
-)
+rem Obter o diretório do script
+set "SCRIPT_DIR=%~dp0"
+cd /d "%SCRIPT_DIR%"
 
-echo Verificando dependencias...
-pip show uvicorn >nul 2>&1
-if errorlevel 1 (
-    echo Instalando dependencias...
-    pip install -r requirements.txt
+cls
+echo +====================================+
+echo |          VisionGuard System        |
+echo +====================================+
+echo.
+echo Deseja instalar/atualizar as dependencias?
+echo.
+echo Pressione:
+echo [S] - Para instalar/atualizar dependencias
+echo [N] - Para pular instalacao e iniciar o sistema
+echo.
+echo.
+
+rem Timer de 15 segundos para resposta
+choice /c SN /t 15 /d N /m "Digite S ou N"
+
+if errorlevel 2 (
+    cls
+    echo +====================================+
+    echo ^|          VisionGuard System          ^|
+    echo +====================================+
+    echo.
+    echo Instalacao ignorada.
+    echo.
+    goto :START_SYSTEM
+) else (
+    cls
+    echo +====================================+
+    echo ^|          VisionGuard System          ^|
+    echo +====================================+
+    echo.
+    echo Iniciando instalacao de dependencias...
+    echo.
+    call install.bat
     if errorlevel 1 (
+        echo.
         echo Erro ao instalar dependencias!
         pause
         exit /b 1
     )
 )
 
+:START_SYSTEM
 echo Iniciando VisionGuard System...
-python src/run.py
+echo.
+python "%SCRIPT_DIR%src/run.py"
 pause

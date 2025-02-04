@@ -72,7 +72,7 @@ settings = Settings()
 
 # Inicializar detector e gerenciador de alertas
 detector = ObjectDetector(settings.model_path)
-alert_manager = AlertManager(settings)
+alert_manager = AlertManager(settings, detector)
 
 @app.on_event("startup")
 async def startup_event():
@@ -234,7 +234,16 @@ async def detect_objects(
         # Se houver detecções acima do threshold de alerta, notificar
         if results.alert_triggered == 1:
             try:
-                await alert_manager.send_alert(image, detections)
+                # Converter detecções para o formato correto
+                formatted_detections = [
+                    {
+                        "class_name": det.class_name,
+                        "confidence": det.confidence,
+                        "bbox": det.bbox
+                    }
+                    for det in validated_detections
+                ]
+                await alert_manager.send_alert(image, formatted_detections)
             except Exception as e:
                 logger.error(f"Erro ao enviar alerta: {str(e)}")
                 # Continua a execução mesmo se o alerta falhar

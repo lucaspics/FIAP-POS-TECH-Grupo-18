@@ -14,14 +14,16 @@ import asyncio
 from .config import Settings
 
 class AlertManager:
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, detector):
         """
         Inicializa o gerenciador de alertas.
         
         Args:
             settings: Configurações da aplicação
+            detector: Instância do ObjectDetector para desenhar as detecções
         """
         self.settings = settings
+        self.detector = detector
         self.logger = logging.getLogger(__name__)
         self.total_alerts = 0
         
@@ -44,9 +46,10 @@ class AlertManager:
         alert_id = f"alert_{timestamp.strftime('%Y%m%d_%H%M%S')}"
         
         try:
-            # Salvar imagem e dados
+            # Desenhar detecções na imagem e salvar
             image_path = self.alerts_dir / f"{alert_id}.jpg"
-            await asyncio.to_thread(cv2.imwrite, str(image_path), image)
+            image_with_detections = self.detector.draw_detections(image, detections)
+            await asyncio.to_thread(cv2.imwrite, str(image_path), image_with_detections)
             
             alert_data = {
                 "timestamp": timestamp.isoformat(),

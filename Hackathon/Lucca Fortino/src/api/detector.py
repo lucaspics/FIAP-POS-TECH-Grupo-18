@@ -193,8 +193,8 @@ class ObjectDetector:
                 x1, y1, x2, y2 = map(int, det["bbox"])
                 label = f"{det['class_name']} {det['confidence']:.2f}"
                 
-                # Definir cor baseada na classe
-                color = self._get_color(det["class_name"])
+                # Definir cor baseada na classe e confiança
+                color = self._get_color(det["class_name"], det["confidence"])
             except KeyError as e:
                 self.logger.error(f"Erro ao acessar chave no dicionário de detecção: {str(e)}")
                 continue
@@ -228,7 +228,7 @@ class ObjectDetector:
                 (x1, y1 - 5),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 font_scale,
-                (255, 255, 255),
+                (0, 0, 0),  # Cor preta para o texto
                 font_thickness
             )
             
@@ -252,21 +252,15 @@ class ObjectDetector:
             "total_detections": self.total_detections
         }
 
-    def _get_color(self, class_name: str) -> tuple:
+    def _get_color(self, class_name: str, confidence: float = 0.0) -> tuple:
         """
-        Retorna uma cor consistente para cada classe.
+        Retorna amarelo brilhante para todas as detecções.
         
         Args:
-            class_name: Nome da classe
+            class_name: Nome da classe (não usado)
+            confidence: Nível de confiança (não usado)
             
         Returns:
-            Tupla BGR
+            Tupla BGR (Amarelo)
         """
-        # Cores pré-definidas para cada classe
-        colors = {
-            "knife": (0, 0, 255),    # Vermelho
-            "scissors": (0, 255, 0),  # Verde
-            "blade": (255, 0, 0)      # Azul
-        }
-        
-        return colors.get(class_name, (128, 128, 128))  # Cinza para classes desconhecidas
+        return (0, 255, 255)  # Amarelo em BGR

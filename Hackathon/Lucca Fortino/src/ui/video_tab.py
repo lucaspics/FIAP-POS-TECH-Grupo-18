@@ -2,13 +2,85 @@ import os
 import cv2
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-    QLabel, QListWidget, QTextEdit, QListWidgetItem
+    QLabel, QListWidget, QTextEdit, QListWidgetItem,
+    QProgressBar, QFrame
 )
-from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtGui import QFont, QPixmap, QColor
 from PyQt5.QtCore import Qt
 from config.logging_config import logger
 from config.app_config import VIDEO_WIDTH, VIDEO_HEIGHT, OVERLAY_PATH
 from utils.video_utils import frame_to_pixmap
+
+class CompactProgressBar(QProgressBar):
+    """Barra de progresso customizada mais compacta."""
+    def __init__(self):
+        super().__init__()
+        self.setFixedHeight(4)  # Altura reduzida
+        self.setTextVisible(False)
+
+class AlertItemWidget(QWidget):
+    """Widget customizado para item de alerta."""
+    def __init__(self, pixmap, time_ms, class_name="", confidence=0.0):
+        super().__init__()
+        
+        # Layout principal sem margens
+        layout = QHBoxLayout()
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(0)
+        self.setLayout(layout)
+
+        # Thumbnail fixo à esquerda
+        thumb_label = QLabel()
+        thumb_label.setFixedSize(60, 45)
+        if pixmap:
+            thumb_label.setPixmap(pixmap.scaled(60, 45, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        else:
+            thumb_label.setText("No thumb")
+        layout.addWidget(thumb_label)
+
+        # Container vertical para textos e barra
+        right_container = QWidget()
+        right_layout = QVBoxLayout()
+        right_layout.setContentsMargins(8, 0, 0, 0)  # Margem apenas à esquerda
+        right_layout.setSpacing(0)
+        right_container.setLayout(right_layout)
+
+        # Classe e confiança (em destaque)
+        if class_name:
+            class_conf = QLabel(f"{class_name} ({confidence:.1%})")
+            class_conf.setFont(QFont("Arial", 10, QFont.Bold))
+            right_layout.addWidget(class_conf)
+
+        # Tempo (menor destaque)
+        time_label = QLabel(f"{int(time_ms/1000)}s")
+        time_label.setFont(QFont("Arial", 8))
+        time_label.setStyleSheet("color: #666;")
+        right_layout.addWidget(time_label)
+
+        # Barra de confiança
+        if confidence > 0:
+            conf_bar = CompactProgressBar()
+            conf_bar.setMaximum(100)
+            conf_bar.setValue(int(confidence * 100))
+
+            # Cor baseada na confiança
+            r = min(255, int(confidence * 255 * 2))
+            g = max(0, int(255 * (1 - confidence * 2)))
+            color = f"rgb({r}, {g}, 0)"
+
+            conf_bar.setStyleSheet(f"""
+                QProgressBar {{
+                    border: none;
+                    background-color: #f0f0f0;
+                }}
+                QProgressBar::chunk {{
+                    background-color: {color};
+                }}
+            """)
+            right_layout.addWidget(conf_bar)
+
+        layout.addWidget(right_container)
+        layout.addStretch()  # Empurra tudo para a esquerda
 
 class VideoTab(QWidget):
     """Aba principal com controles de vídeo e visualização."""
@@ -128,6 +200,19 @@ class VideoTab(QWidget):
         
         self.logs_list = QListWidget()
         self.logs_list.setFixedWidth(300)
+        self.logs_list.setStyleSheet("""
+            QListWidget {
+                background-color: white;
+                border: 1px solid #ddd;
+            }
+            QListWidget::item {
+                padding: 0px;
+                border-bottom: 1px solid #eee;
+            }
+            QListWidget::item:hover {
+                background-color: #f5f5f5;
+            }
+        """)
         self.logs_list.itemClicked.connect(self.parent.jump_to_alert if self.parent else None)
         self.right_layout.addWidget(self.logs_list)
         
@@ -146,33 +231,19 @@ class VideoTab(QWidget):
         """Adiciona uma mensagem aos logs de análise."""
         self.analysis_logs.append(message)
         
-    def add_alert(self, pixmap, time_ms):
+    def add_alert(self, pixmap, time_ms, class_name="", confidence=0.0):
         """Adiciona um novo alerta à lista."""
         # Criar widget personalizado para o alerta
-        widget = QWidget()
-        layout = QHBoxLayout()
-        widget.setLayout(layout)
-        
-        # Thumbnail
-        thumb_label = QLabel()
-        if pixmap:
-            thumb_label.setPixmap(pixmap.scaled(80, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        else:
-            thumb_label.setText("No thumb")
-        layout.addWidget(thumb_label)
-        
-        # Tempo
-        time_label = QLabel(f"{int(time_ms/1000)}s")
-        layout.addWidget(time_label)
+        alert_widget = AlertItemWidget(pixmap, time_ms, class_name, confidence)
         
         # Criar item da lista
         list_item = QListWidgetItem()
         list_item.setData(0, time_ms)  # Armazenar tempo para navegação
-        list_item.setSizeHint(widget.sizeHint())
+        list_item.setSizeHint(alert_widget.sizeHint())
         
         # Adicionar à lista
         self.logs_list.addItem(list_item)
-        self.logs_list.setItemWidget(list_item, widget)
+        self.logs_list.setItemWidget(list_item, alert_widget)
         
     def enable_controls(self, enabled=True):
         """Habilita ou desabilita os controles de vídeo."""

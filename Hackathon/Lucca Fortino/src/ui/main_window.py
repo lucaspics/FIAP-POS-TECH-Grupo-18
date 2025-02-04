@@ -121,6 +121,16 @@ class SecurityCameraApp(QWidget):
                     with open(json_path, 'r') as f:
                         alert_data = json.load(f)
                         
+                    # Extrair informações de detecção
+                    detections = alert_data.get('detections', [])
+                    if not detections:
+                        continue
+                        
+                    # Usar a detecção com maior confiança
+                    best_detection = max(detections, key=lambda x: x.get('confidence', 0))
+                    class_name = best_detection.get('class_name', 'unknown')
+                    confidence = best_detection.get('confidence', 0.0)
+                        
                     # Verificar se há imagem correspondente
                     image_path = json_path.replace('.json', '.jpg')
                     if not os.path.exists(image_path):
@@ -142,10 +152,15 @@ class SecurityCameraApp(QWidget):
                         qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
                         pixmap = QPixmap.fromImage(qt_image)
                         
-                        # Usar o tempo atual do vídeo para o alerta
-                        self.video_tab.add_alert(pixmap, self.current_video_time)
+                        # Adicionar alerta com informações completas
+                        self.video_tab.add_alert(
+                            pixmap=pixmap,
+                            time_ms=self.current_video_time,
+                            class_name=class_name,
+                            confidence=confidence
+                        )
                         self.processed_alerts.add(json_path)
-                        logger.info(f"Alerta processado: {filename} em {self.current_video_time}ms")
+                        logger.info(f"Alerta processado: {filename} em {self.current_video_time}ms - {class_name} ({confidence:.2%})")
                             
                 except Exception as e:
                     logger.error(f"Erro ao processar alerta {filename}: {str(e)}")

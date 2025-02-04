@@ -1,9 +1,16 @@
 import os
 import cv2
+import json
+import shutil
+from datetime import datetime
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QTabWidget, QFileDialog
 from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QImage, QPixmap
 from config.logging_config import logger
-from config.app_config import DEFAULT_ANALYSIS_INTERVAL, FRAME_INTERVAL
+from config.app_config import (
+    DEFAULT_ANALYSIS_INTERVAL, FRAME_INTERVAL,
+    MIN_TIME_BETWEEN_ALERTS, LOG_DIRS
+)
 from workers.analysis_worker import AnalysisWorker
 from ui.video_tab import VideoTab
 from ui.settings_tab import SettingsTab
@@ -16,6 +23,7 @@ class SecurityCameraApp(QWidget):
         super().__init__()
         self.init_variables()
         self.setup_ui()
+        self.clear_alerts()  # Limpa alertas antigos ao iniciar
         
     def init_variables(self):
         """Inicializa as variáveis de controle."""
@@ -28,8 +36,17 @@ class SecurityCameraApp(QWidget):
         # Variáveis de análise
         self.analysis_interval = DEFAULT_ANALYSIS_INTERVAL
         self.current_frame_count = 0
-        self.analysis_in_progress = False
-        self.worker = None
+        self.last_analyzed_frame = 0
+        self.active_workers = []
+        self.max_concurrent_workers = 2
+        
+        # Cache do último frame para alertas
+        self.last_frame = None
+        self.current_video_time = 0
+        
+        # Controle de alertas processados
+        self.processed_alerts = set()
+        self.alert_timer = None
         
     def setup_ui(self):
         """Configura a interface do usuário."""
@@ -52,6 +69,90 @@ class SecurityCameraApp(QWidget):
         self.settings_tab = SettingsTab(self)
         self.tabs.addTab(self.settings_tab, "Configurações")
         
+    def clear_alerts(self):
+        """Limpa todos os arquivos de alerta."""
+        try:
+            alerts_dir = os.path.join(LOG_DIRS['base'], 'alerts')
+            if os.path.exists(alerts_dir):
+                shutil.rmtree(alerts_dir)
+            os.makedirs(alerts_dir, exist_ok=True)
+            logger.info("Diretório de alertas limpo")
+            
+            # Limpar lista de alertas na interface
+            if hasattr(self, 'video_tab'):
+                self.video_tab.logs_list.clear()
+                self.processed_alerts.clear()
+            
+        except Exception as e:
+            logger.error(f"Erro ao limpar alertas: {str(e)}")
+            
+    def setup_alert_timer(self):
+        """Configura timer para verificar novos alertas."""
+        if self.alert_timer is None:
+            self.alert_timer = QTimer(self)
+            self.alert_timer.timeout.connect(self.check_new_alerts)
+        self.alert_timer.start(1000)  # Verifica a cada segundo
+        logger.info("Monitoramento de alertas iniciado")
+        
+    def stop_alert_timer(self):
+        """Para o timer de alertas."""
+        if self.alert_timer is not None:
+            self.alert_timer.stop()
+            logger.info("Monitoramento de alertas parado")
+        
+    def check_new_alerts(self):
+        """Verifica se há novos alertas para exibir."""
+        try:
+            alerts_dir = os.path.join(LOG_DIRS['base'], 'alerts')
+            if not os.path.exists(alerts_dir):
+                return
+                
+            # Procurar por novos arquivos JSON de alerta
+            for filename in os.listdir(alerts_dir):
+                if not filename.endswith('.json'):
+                    continue
+                    
+                json_path = os.path.join(alerts_dir, filename)
+                if json_path in self.processed_alerts:
+                    continue
+                    
+                # Carregar dados do alerta
+                try:
+                    with open(json_path, 'r') as f:
+                        alert_data = json.load(f)
+                        
+                    # Verificar se há imagem correspondente
+                    image_path = json_path.replace('.json', '.jpg')
+                    if not os.path.exists(image_path):
+                        continue
+                        
+                    # Carregar e processar imagem
+                    frame = cv2.imread(image_path)
+                    if frame is not None:
+                        # Criar thumbnail
+                        height, width = frame.shape[:2]
+                        thumb_width = 100
+                        thumb_height = int(height * (thumb_width / width))
+                        thumbnail = cv2.resize(frame, (thumb_width, thumb_height))
+                        
+                        # Converter para QPixmap
+                        rgb_image = cv2.cvtColor(thumbnail, cv2.COLOR_BGR2RGB)
+                        h, w, ch = rgb_image.shape
+                        bytes_per_line = ch * w
+                        qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+                        pixmap = QPixmap.fromImage(qt_image)
+                        
+                        # Usar o tempo atual do vídeo para o alerta
+                        self.video_tab.add_alert(pixmap, self.current_video_time)
+                        self.processed_alerts.add(json_path)
+                        logger.info(f"Alerta processado: {filename} em {self.current_video_time}ms")
+                            
+                except Exception as e:
+                    logger.error(f"Erro ao processar alerta {filename}: {str(e)}")
+                    
+        except Exception as e:
+            logger.error(f"Erro ao verificar novos alertas: {str(e)}")
+        
     def connect_camera(self):
         """Conecta à fonte de vídeo."""
         options = QFileDialog.Options()
@@ -68,9 +169,21 @@ class SecurityCameraApp(QWidget):
             if self.cap.isOpened():
                 self.video_tab.enable_controls(True)
                 logger.info(f"Vídeo carregado: {self.video_path}")
+                self.clear_alerts()  # Limpa alertas ao conectar
+                self.setup_alert_timer()  # Inicia monitoramento
                 self.toggle_play_pause()  # Inicia reprodução
             else:
                 logger.error("Erro ao carregar o vídeo.")
+                
+    def disconnect_camera(self):
+        """Desconecta a fonte de vídeo."""
+        if self.cap:
+            self.cap.release()
+            self.cap = None
+            self.video_tab.enable_controls(False)
+            self.stop_alert_timer()  # Para monitoramento
+            self.clear_alerts()  # Limpa alertas ao desconectar
+            logger.info("Câmera desconectada")
                 
     def toggle_play_pause(self):
         """Alterna entre play e pause."""
@@ -114,100 +227,59 @@ class SecurityCameraApp(QWidget):
             
         # Processar frame
         frame = resize_frame(frame)
+        self.last_frame = frame.copy()  # Cache do frame para alertas
         self.video_tab.update_video_frame(frame)
         
         # Atualizar tempo
-        current_time = int(self.cap.get(cv2.CAP_PROP_POS_MSEC))
-        self.video_tab.update_time(current_time)
+        self.current_video_time = int(self.cap.get(cv2.CAP_PROP_POS_MSEC))
+        self.video_tab.update_time(self.current_video_time)
         
         # Incrementar contador e verificar necessidade de análise
         self.current_frame_count += 1
-        if self.current_frame_count % self.analysis_interval == 0 and not self.analysis_in_progress:
+        
+        # Limpar workers concluídos
+        self.active_workers = [w for w in self.active_workers if not w.isFinished()]
+        
+        # Verificar se devemos analisar este frame
+        frames_since_last = self.current_frame_count - self.last_analyzed_frame
+        if (frames_since_last >= self.analysis_interval and 
+            len(self.active_workers) < self.max_concurrent_workers):
             self.analyze_frame(frame)
+            self.last_analyzed_frame = self.current_frame_count
             
     def analyze_frame(self, frame):
         """Inicia a análise de um frame."""
         try:
-            # Limpar worker anterior
-            if self.worker:
-                try:
-                    self.worker.disconnect()
-                    self.worker.deleteLater()
-                except Exception as e:
-                    logger.error(f"Erro ao limpar worker anterior: {str(e)}")
-                self.worker = None
-            
-            # Criar novo worker
-            self.analysis_in_progress = True
             frame_rgb = bgr_to_rgb(frame.copy())
-            self.worker = AnalysisWorker(frame_rgb, self.current_frame_count)
+            worker = AnalysisWorker(frame_rgb, self.current_frame_count)
             
             # Conectar sinais
-            self.worker.analysis_complete.connect(self.handle_analysis_result)
-            self.worker.analysis_error.connect(self.handle_analysis_error)
-            self.worker.finished.connect(self._on_analysis_finished)
+            worker.analysis_complete.connect(self.handle_analysis_result)
+            worker.analysis_error.connect(self.handle_analysis_error)
             
-            # Iniciar análise
-            self.worker.start()
-            self.video_tab.add_log(f"Frame {self.current_frame_count} - Iniciando análise...")
+            # Adicionar à lista de workers ativos e iniciar
+            self.active_workers.append(worker)
+            worker.start()
             
         except Exception as e:
             logger.error(f"Erro ao criar worker: {str(e)}")
-            self.analysis_in_progress = False
             
     def handle_analysis_result(self, result):
         """Processa o resultado da análise."""
         try:
-            self.video_tab.add_log("=== Análise do Frame ===")
-            self.video_tab.add_log(f"Timestamp: {result.get('timestamp')}")
-            self.video_tab.add_log(f"Detecções encontradas: {len(result.get('detections', []))}")
+            detections = result.get('detections', [])
+            self.video_tab.add_log(f"Detecções encontradas: {len(detections)}")
             
-            for det in result.get('detections', []):
+            for det in detections:
                 det_info = f"- Classe: {det.get('class_name', 'unknown')}, Confiança: {float(det['confidence']):.2f}"
                 self.video_tab.add_log(det_info)
-            
-            # Verificar necessidade de alerta
-            alert_value = int(result.get('alert_triggered', 0))
-            if alert_value == 1:
-                self.video_tab.add_log(">>> ALERTA DETECTADO!")
-                _, frame = self.cap.read()
-                if frame is not None:
-                    self.trigger_alert(frame=frame)
                     
         except Exception as e:
             logger.error(f"Erro ao processar resultado: {str(e)}")
-            self.video_tab.add_log(f"Erro ao processar resultado: {str(e)}")
             
     def handle_analysis_error(self, error_msg):
         """Trata erros na análise."""
         logger.error(f"Erro na análise do frame {self.current_frame_count}: {error_msg}")
-        self.video_tab.add_log(f"ERRO no frame {self.current_frame_count}: {error_msg}")
-        
-    def _on_analysis_finished(self):
-        """Chamado quando a análise é finalizada."""
-        logger.info(f"Análise do frame {self.current_frame_count} finalizada")
-        self.analysis_in_progress = False
-        if self.worker:
-            self.worker.deleteLater()
-            self.worker = None
-            
-    def trigger_alert(self, frame=None):
-        """Dispara um alerta."""
-        if not self.cap or not self.cap.isOpened():
-            logger.error("Erro: Nenhum vídeo conectado.")
-            return
-            
-        if frame is None:
-            current_pos = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
-            self.cap.set(cv2.CAP_PROP_POS_FRAMES, current_pos - 1)
-            ret, frame = self.cap.read()
-            if not ret:
-                logger.error("Não foi possível capturar o frame.")
-                return
-                
-        current_time = int(self.cap.get(cv2.CAP_PROP_POS_MSEC))
-        self.video_tab.add_alert(frame, current_time)
-        logger.info("Alerta registrado - o email será enviado pela API")
         
     def jump_to_alert(self, item):
         """Salta para um momento específico do vídeo."""
@@ -215,7 +287,12 @@ class SecurityCameraApp(QWidget):
             return
             
         alert_time = item.data(0)
+        if alert_time is None:
+            logger.error("Tempo do alerta não encontrado")
+            return
+            
         target_time = max(0, alert_time - 1000)  # 1 segundo antes
+        logger.info(f"Pulando para o tempo {target_time}ms")
         self.cap.set(cv2.CAP_PROP_POS_MSEC, target_time)
         
         # Atualizar frame
@@ -223,3 +300,10 @@ class SecurityCameraApp(QWidget):
         if ret:
             frame = resize_frame(frame)
             self.video_tab.update_video_frame(frame)
+            self.current_video_time = target_time
+            self.video_tab.update_time(target_time)
+            
+    def closeEvent(self, event):
+        """Evento chamado ao fechar a aplicação."""
+        self.disconnect_camera()
+        event.accept()

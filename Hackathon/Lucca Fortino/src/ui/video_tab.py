@@ -2,14 +2,13 @@ import os
 import cv2
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-    QLabel, QListWidget, QTextEdit
+    QLabel, QListWidget, QTextEdit, QListWidgetItem
 )
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import Qt
 from config.logging_config import logger
 from config.app_config import VIDEO_WIDTH, VIDEO_HEIGHT, OVERLAY_PATH
 from utils.video_utils import frame_to_pixmap
-from utils.alert_utils import AlertManager
 
 class VideoTab(QWidget):
     """Aba principal com controles de vídeo e visualização."""
@@ -55,13 +54,6 @@ class VideoTab(QWidget):
         
         # Controles de reprodução
         self.setup_playback_controls()
-        
-        # Botão de alerta
-        self.alert_button = QPushButton("Disparar Alerta")
-        self.alert_button.setEnabled(False)
-        self.alert_button.setStyleSheet("background-color: #e7e7e7; color: black; font-size: 14px;")
-        self.alert_button.clicked.connect(self.parent.trigger_alert if self.parent else None)
-        self.left_layout.addWidget(self.alert_button)
         
     def setup_video_area(self):
         """Configura a área de exibição do vídeo."""
@@ -154,10 +146,31 @@ class VideoTab(QWidget):
         """Adiciona uma mensagem aos logs de análise."""
         self.analysis_logs.append(message)
         
-    def add_alert(self, frame, time_ms):
+    def add_alert(self, pixmap, time_ms):
         """Adiciona um novo alerta à lista."""
-        alert_frame_path = AlertManager.save_alert_frame(frame, time_ms)
-        list_item, widget = AlertManager.create_alert_widget(alert_frame_path, time_ms)
+        # Criar widget personalizado para o alerta
+        widget = QWidget()
+        layout = QHBoxLayout()
+        widget.setLayout(layout)
+        
+        # Thumbnail
+        thumb_label = QLabel()
+        if pixmap:
+            thumb_label.setPixmap(pixmap.scaled(80, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        else:
+            thumb_label.setText("No thumb")
+        layout.addWidget(thumb_label)
+        
+        # Tempo
+        time_label = QLabel(f"{int(time_ms/1000)}s")
+        layout.addWidget(time_label)
+        
+        # Criar item da lista
+        list_item = QListWidgetItem()
+        list_item.setData(0, time_ms)  # Armazenar tempo para navegação
+        list_item.setSizeHint(widget.sizeHint())
+        
+        # Adicionar à lista
         self.logs_list.addItem(list_item)
         self.logs_list.setItemWidget(list_item, widget)
         
@@ -166,5 +179,4 @@ class VideoTab(QWidget):
         self.play_pause_button.setEnabled(enabled)
         self.rewind_button.setEnabled(enabled)
         self.forward_button.setEnabled(enabled)
-        self.alert_button.setEnabled(enabled)
         self.connect_button.setEnabled(not enabled)  # Inverso dos outros

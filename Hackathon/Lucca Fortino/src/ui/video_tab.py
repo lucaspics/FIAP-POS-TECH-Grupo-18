@@ -232,7 +232,7 @@ class VideoTab(QWidget):
         self.analysis_logs.append(message)
         
     def add_alert(self, pixmap, time_ms, class_name="", confidence=0.0):
-        """Adiciona um novo alerta à lista."""
+        """Adiciona um novo alerta à lista na posição correta baseada no timestamp."""
         # Criar widget personalizado para o alerta
         alert_widget = AlertItemWidget(pixmap, time_ms, class_name, confidence)
         
@@ -241,9 +241,19 @@ class VideoTab(QWidget):
         list_item.setData(0, time_ms)  # Armazenar tempo para navegação
         list_item.setSizeHint(alert_widget.sizeHint())
         
-        # Adicionar à lista
-        self.logs_list.addItem(list_item)
+        # Encontrar a posição correta para inserir o alerta
+        insert_pos = 0
+        for i in range(self.logs_list.count()):
+            current_item = self.logs_list.item(i)
+            current_time = current_item.data(0)
+            if time_ms < current_time:
+                break
+            insert_pos = i + 1
+        
+        # Inserir na posição correta
+        self.logs_list.insertItem(insert_pos, list_item)
         self.logs_list.setItemWidget(list_item, alert_widget)
+        logger.info(f"Alerta adicionado na posição {insert_pos} com timestamp {time_ms}ms")
         
     def enable_controls(self, enabled=True):
         """Habilita ou desabilita os controles de vídeo."""

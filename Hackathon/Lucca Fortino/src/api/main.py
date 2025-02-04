@@ -113,7 +113,8 @@ async def root():
 async def detect_objects(
     frame: UploadFile = File(...),
     confidence: float = 0.1,
-    return_image: bool = False
+    return_image: bool = False,
+    video_time: int = 0
 ) -> Dict:
     """
     Detecta objetos cortantes em um frame.
@@ -243,7 +244,7 @@ async def detect_objects(
                     }
                     for det in validated_detections
                 ]
-                await alert_manager.send_alert(image, formatted_detections)
+                await alert_manager.send_alert(image, formatted_detections, video_time)
             except Exception as e:
                 logger.error(f"Erro ao enviar alerta: {str(e)}")
                 # Continua a execução mesmo se o alerta falhar

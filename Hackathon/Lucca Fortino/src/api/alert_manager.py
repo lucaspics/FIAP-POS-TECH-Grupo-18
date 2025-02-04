@@ -111,7 +111,7 @@ class AlertManager:
                 
             await asyncio.sleep(60)  # Limpa a cada minuto
 
-    async def send_alert(self, image: np.ndarray, detections: List[Dict]):
+    async def send_alert(self, image: np.ndarray, detections: List[Dict], video_time: int = 0):
         """Processa detecções e gerencia alertas."""
         timestamp = datetime.now()
         alert_id = f"alert_{timestamp.strftime('%Y%m%d_%H%M%S')}"
@@ -125,6 +125,7 @@ class AlertManager:
             # Salvar dados do alerta
             alert_data = {
                 "timestamp": timestamp.isoformat(),
+                "video_time": video_time,  # Tempo relativo do vídeo em ms
                 "detections": detections,
                 "image_path": str(image_path)
             }

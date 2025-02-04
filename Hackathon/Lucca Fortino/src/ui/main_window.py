@@ -107,7 +107,8 @@ class SecurityCameraApp(QWidget):
             if not os.path.exists(alerts_dir):
                 return
                 
-            # Procurar por novos arquivos JSON de alerta
+            # Coletar e ordenar alertas por timestamp
+            alert_files = []
             for filename in os.listdir(alerts_dir):
                 if not filename.endswith('.json'):
                     continue
@@ -116,11 +117,21 @@ class SecurityCameraApp(QWidget):
                 if json_path in self.processed_alerts:
                     continue
                     
-                # Carregar dados do alerta
                 try:
                     with open(json_path, 'r') as f:
                         alert_data = json.load(f)
-                        
+                    timestamp = datetime.fromisoformat(alert_data['timestamp'])
+                    alert_files.append((timestamp, json_path, alert_data))
+                except Exception as e:
+                    logger.error(f"Erro ao ler alerta {filename}: {str(e)}")
+                    continue
+            
+            # Ordenar por timestamp
+            alert_files.sort(key=lambda x: x[0])
+            
+            # Processar alertas ordenados
+            for _, json_path, alert_data in alert_files:
+                try:
                     # Extrair informações de detecção
                     detections = alert_data.get('detections', [])
                     if not detections:
@@ -152,18 +163,21 @@ class SecurityCameraApp(QWidget):
                         qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
                         pixmap = QPixmap.fromImage(qt_image)
                         
-                        # Adicionar alerta com informações completas
+                        # Usar o tempo relativo do vídeo
+                        alert_time_ms = alert_data.get('video_time', 0)
+                        
+                        # Adicionar alerta com o timestamp exato da detecção
                         self.video_tab.add_alert(
                             pixmap=pixmap,
-                            time_ms=self.current_video_time,
+                            time_ms=alert_time_ms,
                             class_name=class_name,
                             confidence=confidence
                         )
                         self.processed_alerts.add(json_path)
-                        logger.info(f"Alerta processado: {filename} em {self.current_video_time}ms - {class_name} ({confidence:.2%})")
+                        logger.info(f"Alerta processado: {os.path.basename(json_path)} em {alert_time_ms}ms - {class_name} ({confidence:.2%})")
                             
                 except Exception as e:
-                    logger.error(f"Erro ao processar alerta {filename}: {str(e)}")
+                    logger.error(f"Erro ao processar alerta {os.path.basename(json_path)}: {str(e)}")
                     
         except Exception as e:
             logger.error(f"Erro ao verificar novos alertas: {str(e)}")
@@ -266,7 +280,11 @@ class SecurityCameraApp(QWidget):
         """Inicia a análise de um frame."""
         try:
             frame_rgb = bgr_to_rgb(frame.copy())
-            worker = AnalysisWorker(frame_rgb, self.current_frame_count)
+            worker = AnalysisWorker(
+                frame_rgb,
+                self.current_frame_count,
+                self.current_video_time
+            )
             
             # Conectar sinais
             worker.analysis_complete.connect(self.handle_analysis_result)
@@ -306,17 +324,33 @@ class SecurityCameraApp(QWidget):
             logger.error("Tempo do alerta não encontrado")
             return
             
-        target_time = max(0, alert_time - 1000)  # 1 segundo antes
-        logger.info(f"Pulando para o tempo {target_time}ms")
-        self.cap.set(cv2.CAP_PROP_POS_MSEC, target_time)
+        # Primeiro pausar o vídeo
+        if self.is_playing:
+            self.toggle_play_pause()
+            
+        # Garantir que o timer está parado
+        self.timer.stop()
         
-        # Atualizar frame
-        ret, frame = self.cap.read()
-        if ret:
+        # Posicionar o vídeo no tempo do alerta
+        logger.info(f"Pulando para o tempo {alert_time}ms")
+        self.cap.set(cv2.CAP_PROP_POS_MSEC, alert_time)
+        
+        # Ler alguns frames para garantir que estamos no frame correto
+        for _ in range(3):
+            ret, frame = self.cap.read()
+            if not ret:
+                break
+        
+        if ret and frame is not None:
             frame = resize_frame(frame)
             self.video_tab.update_video_frame(frame)
-            self.current_video_time = target_time
-            self.video_tab.update_time(target_time)
+            
+            # Usar o tempo do alerta
+            self.current_video_time = alert_time
+            self.video_tab.update_time(alert_time)
+            logger.info(f"Frame atualizado para o tempo {alert_time}ms")
+        else:
+            logger.error("Não foi possível atualizar o frame")
             
     def closeEvent(self, event):
         """Evento chamado ao fechar a aplicação."""

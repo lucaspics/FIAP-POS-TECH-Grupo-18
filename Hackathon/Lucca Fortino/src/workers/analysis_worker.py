@@ -18,10 +18,11 @@ class AnalysisWorker(QThread):
     analysis_complete = pyqtSignal(dict)  # Sinal emitido quando a análise é concluída
     analysis_error = pyqtSignal(str)      # Sinal emitido em caso de erro
     
-    def __init__(self, frame_rgb, frame_number=None):
+    def __init__(self, frame_rgb, frame_number=None, video_time=0):
         super().__init__()
         self.frame_rgb = frame_rgb.copy()
         self.frame_number = frame_number
+        self.video_time = video_time
         
     def analyze(self):
         """Realiza a análise do frame."""
@@ -33,7 +34,8 @@ class AnalysisWorker(QThread):
             # Configurar parâmetros da requisição
             params = {
                 'confidence': DEFAULT_CONFIDENCE_THRESHOLD,
-                'return_image': True  # API irá salvar a imagem se necessário
+                'return_image': True,  # API irá salvar a imagem se necessário
+                'video_time': self.video_time  # Tempo do vídeo em ms
             }
             
             # Usar timeouts mais adequados

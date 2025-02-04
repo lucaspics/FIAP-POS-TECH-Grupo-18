@@ -136,52 +136,24 @@ async def detect_objects(
     }
     
     try:
-        # Log detalhado da requisição recebida
-        logger.info("\n==== Nova Requisição de Detecção ====")
-        logger.info(f"Timestamp início: {datetime.now().isoformat()}")
+        # Log básico da requisição
+        logger.info("Nova requisição de detecção recebida")
         
         if not frame:
             logger.error("Nenhum frame recebido")
             return JSONResponse(content=empty_response)
-        logger.info(f"Tipo do objeto frame: {type(frame)}")
-        logger.info(f"Atributos disponíveis: {dir(frame)}")
-        logger.info(f"Arquivo: {frame.filename}")
-        # Verificar se o objeto tem o atributo headers antes de tentar acessá-lo
-        if hasattr(frame, 'headers'):
-            logger.info(f"Headers: {frame.headers}")
-        else:
-            logger.info("Frame não possui atributo headers")
             
-        # Tentar obter o content-type de várias formas
-        content_type = None
-        # Verificar content_type de forma mais elegante
-        content_type = None
+        # Definir content-type
+        content_type = getattr(frame, 'content_type', None) or \
+                      (frame.headers.get('content-type') if hasattr(frame, 'headers') else None) or \
+                      'image/jpeg'
         
-        if hasattr(frame, 'content_type'):
-            content_type = frame.content_type
-            logger.info(f"Content-Type do atributo: {content_type}")
-        elif hasattr(frame, 'headers') and frame.headers:
-            content_type = frame.headers.get('content-type')
-            logger.info(f"Content-Type dos headers: {content_type}")
-        else:
-            logger.info("Não foi possível determinar o content-type do frame")
-        
-        if content_type is None:
-            content_type = 'image/jpeg'  # Valor padrão
-            logger.info(f"Usando content-type padrão: {content_type}")
-            
         # Atribuir o content-type ao frame
         frame._content_type = content_type
         
-        logger.info(f"Content-Type final: {content_type}")
-        logger.info(f"Confidence: {confidence}")
-        logger.info(f"Return Image: {return_image}")
-        
         try:
-            # Ler e processar imagem
+            # Processar imagem
             contents = await frame.read()
-            logger.info(f"Tamanho dos dados recebidos: {len(contents)} bytes")
-            
             if len(contents) == 0:
                 logger.error("Frame vazio recebido")
                 return JSONResponse(content=empty_response)
@@ -193,33 +165,26 @@ async def detect_objects(
                 logger.error("Falha ao decodificar imagem")
                 return JSONResponse(content=empty_response)
             
-            logger.info(f"Imagem decodificada com sucesso. Dimensões: {image.shape}")
+            # Redimensionar imagem
+            height, width = image.shape[:2]
+            target_height = 320
+            target_width = int(width * (target_height / height))
+            image = cv2.resize(image, (target_width, target_height), interpolation=cv2.INTER_AREA)
         except Exception as e:
             logger.error(f"Erro ao processar imagem: {str(e)}")
             return JSONResponse(content=empty_response)
             
-        # Realizar detecção com tratamento de erros melhorado
-        logger.info("\n=== Debug Detecção ===")
-        logger.info(f"Tipo do confidence threshold: {type(confidence)}")
-        logger.info(f"Valor do confidence threshold: {confidence}")
-        
+        # Realizar detecção
         try:
             detections = await detector.detect(image, conf_threshold=confidence)
             
-            # Se não houver detecções, logar como informação
             if not detections:
                 logger.info("Nenhuma detecção encontrada no frame")
             else:
-                logger.info("\n=== Debug Detecções ===")
-                logger.info(f"Número de detecções: {len(detections)}")
-                for i, det in enumerate(detections):
-                    logger.info(f"\nDetecção {i+1}:")
-                    for key, value in det.items():
-                        logger.info(f"  {key}: {value} (tipo: {type(value)})")
+                logger.info(f"Encontradas {len(detections)} detecções")
             
         except Exception as e:
             logger.error(f"Erro durante detecção: {str(e)}")
-            # Retornar resposta vazia em vez de erro 500
             return JSONResponse(
                 status_code=200,
                 content={
@@ -230,20 +195,14 @@ async def detect_objects(
                 }
             )
         
-        # Verificar confiança das detecções
-        confidences = [d["confidence"] for d in detections]
-        logger.info(f"Confidence threshold: {settings.alert_threshold}")
-        logger.info(f"Detecções confidences: {confidences}")
-        
-        # Calcular alert_triggered
+        # Verificar alertas
         alert_check = any(d["confidence"] > settings.alert_threshold for d in detections)
-        logger.info(f"Alert check (bool): {alert_check}, type: {type(alert_check)}")
-        
         alert_triggered = 1 if alert_check else 0
-        logger.info(f"Alert triggered (int): {alert_triggered}, type: {type(alert_triggered)}")
-        # Validar e converter tipos antes de criar a resposta
+        
+        if alert_triggered:
+            logger.info(f"Alerta ativado - {len(detections)} objetos detectados")
+        # Validar detecções
         try:
-            # Criar objetos Detection validados
             validated_detections = []
             for det in detections:
                 try:
@@ -257,32 +216,18 @@ async def detect_objects(
                     logger.error(f"Erro ao validar detecção: {str(det_err)}")
                     continue
             
-            # Se todas as validações falharem, retornar resposta vazia
             if not validated_detections and detections:
-                logger.error("Todas as detecções falharam na validação")
+                logger.error("Falha na validação das detecções")
                 return JSONResponse(content=empty_response)
             
-            try:
-                # Criar resposta com tipos validados
-                results = DetectionResponse(
-                    timestamp=str(datetime.now().isoformat()),
-                    detections=validated_detections,
-                    alert_triggered=int(alert_triggered)
-                )
-                
-                # Log detalhado dos tipos
-                logger.info("=== Validação de Tipos ===")
-                logger.info(f"Timestamp type: {type(results.timestamp)}")
-                logger.info(f"Alert triggered type: {type(results.alert_triggered)}")
-                logger.info(f"Detections type: {type(results.detections)}")
-                logger.info(f"DetectionResponse criado com sucesso: {results.model_dump()}")
-                
-            except Exception as resp_err:
-                logger.error(f"Erro ao criar DetectionResponse: {str(resp_err)}")
-                return JSONResponse(content=empty_response)
-                
+            results = DetectionResponse(
+                timestamp=str(datetime.now().isoformat()),
+                detections=validated_detections,
+                alert_triggered=int(alert_triggered)
+            )
+            
         except Exception as e:
-            logger.error(f"Erro na validação de tipos: {str(e)}")
+            logger.error(f"Erro na validação: {str(e)}")
             return JSONResponse(content=empty_response)
         
         # Se houver detecções acima do threshold de alerta, notificar
@@ -295,28 +240,23 @@ async def detect_objects(
                 # Continua a execução mesmo se o alerta falhar
         
         try:
-            # Serializar manualmente para garantir tipos corretos
-            try:
-                serialized_data = {
-                    "timestamp": str(results.timestamp),
-                    "alert_triggered": int(results.alert_triggered),
-                    "detections": [
-                        {
-                            "class_name": str(det.class_name),
-                            "confidence": float(det.confidence),
-                            "bbox": [float(x) for x in det.bbox]
-                        }
-                        for det in results.detections
-                    ]
-                }
-            except Exception as ser_err:
-                logger.error(f"Erro na serialização básica: {str(ser_err)}")
-                return JSONResponse(content=empty_response)
+            # Serializar resposta
+            serialized_data = {
+                "timestamp": str(results.timestamp),
+                "alert_triggered": int(results.alert_triggered),
+                "detections": [
+                    {
+                        "class_name": str(det.class_name),
+                        "confidence": float(det.confidence),
+                        "bbox": [float(x) for x in det.bbox]
+                    }
+                    for det in results.detections
+                ]
+            }
 
-            # Se solicitado, incluir imagem com detecções
-            if bool(return_image):  # Converter explicitamente para bool
+            # Adicionar imagem se solicitado
+            if bool(return_image):
                 try:
-                    # Converter detecções validadas de volta para o formato original
                     draw_detections = [
                         {
                             "class_name": det.class_name,
@@ -329,49 +269,18 @@ async def detect_objects(
                     serialized_data["image"] = _encode_image(annotated_image)
                 except Exception as img_err:
                     logger.error(f"Erro ao processar imagem de retorno: {str(img_err)}")
-                    # Continuar sem a imagem em caso de erro
-            
-            try:
-                # Log detalhado da serialização
-                logger.info("=== Serialização Final ===")
-                logger.info(f"timestamp type: {type(serialized_data['timestamp'])}")
-                logger.info(f"alert_triggered type: {type(serialized_data['alert_triggered'])}")
-                logger.info(f"detections type: {type(serialized_data['detections'])}")
-                
-                # Criar versão do JSON para log (sem a imagem)
-                log_data = serialized_data.copy()
-                if 'image' in log_data:
-                    log_data['image'] = '<imagem removida do log>'
-                
-                # Log da versão sem imagem
-                logger.info(f"JSON string: {json.dumps(log_data)}")
-            except Exception as log_err:
-                logger.error(f"Erro ao gerar logs: {str(log_err)}")
-                # Continuar mesmo se o logging falhar
-            
-            # Calcular e logar métricas de tempo
-            try:
-                request_time = time.time() - request_start
-                logger.info("\n=== Métricas de Performance ===")
-                logger.info(f"Tempo total de processamento: {request_time:.2f}s")
-                logger.info(f"Timestamp fim: {datetime.now().isoformat()}")
-                logger.info("================================\n")
-            except Exception as perf_err:
-                logger.error(f"Erro ao calcular métricas: {str(perf_err)}")
+
+            # Log de performance
+            request_time = time.time() - request_start
+            logger.info(f"Processamento concluído em {request_time:.2f}s")
             
             return JSONResponse(content=serialized_data)
         except Exception as e:
-            logger.error(f"Erro fatal na serialização: {str(e)}")
+            logger.error(f"Erro na serialização: {str(e)}")
             return JSONResponse(content=empty_response)
         
     except Exception as e:
-        try:
-            request_time = time.time() - request_start
-            logger.error(f"Erro ao processar detecção (após {request_time:.2f}s): {str(e)}")
-            logger.error("Stacktrace completo:", exc_info=True)
-        except:
-            logger.error("Erro ao processar exceção", exc_info=True)
-        
+        logger.error("Erro no processamento da detecção:", exc_info=True)
         return JSONResponse(
             content={
                 "timestamp": datetime.now().isoformat(),

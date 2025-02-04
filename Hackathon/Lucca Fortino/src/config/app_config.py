@@ -9,7 +9,7 @@ DEFAULT_FPS = 30  # ~33ms por frame
 FRAME_INTERVAL = 30  # Intervalo em milissegundos
 
 # Configurações de análise
-DEFAULT_ANALYSIS_INTERVAL = 60  # Frames entre cada análise (2 segundos em 30fps)
+DEFAULT_ANALYSIS_INTERVAL = 15  # Reduzido para 0.5s em 30fps
 DEFAULT_CONFIDENCE_THRESHOLD = 0.15
 
 # Configurações de API

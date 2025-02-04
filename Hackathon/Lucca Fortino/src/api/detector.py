@@ -27,9 +27,33 @@ class ObjectDetector:
             self.classes = self.model.names
             self.logger.info(f"Modelo carregado com sucesso: {model_path}")
             self.logger.info(f"Classes disponíveis: {self.classes}")
+            
+            # Realizar warmup do modelo
+            self.logger.info("Iniciando warmup do modelo...")
+            self._warmup_model()
+            self.logger.info("Warmup concluído com sucesso")
+            
         except Exception as e:
             self.logger.error(f"Erro ao carregar modelo: {str(e)}")
             raise
+
+    def _warmup_model(self):
+        """Realiza warmup do modelo com uma imagem em branco."""
+        try:
+            # Criar imagem em branco para warmup
+            dummy_image = np.zeros((320, 320, 3), dtype=np.uint8)
+            
+            # Realizar algumas inferências para aquecer o modelo
+            with torch.no_grad():
+                for _ in range(3):  # 3 inferências de warmup
+                    self.model(dummy_image)
+                    
+            if hasattr(torch, 'cuda'):
+                torch.cuda.empty_cache()
+                
+        except Exception as e:
+            self.logger.error(f"Erro durante warmup: {str(e)}")
+            # Não levantar exceção para não impedir a inicialização
 
     async def detect(self, image: np.ndarray, conf_threshold: float = 0.25) -> List[Dict]:
         """
@@ -89,13 +113,6 @@ class ObjectDetector:
                 if hasattr(torch, 'cuda'):
                     torch.cuda.empty_cache()
                 
-            # TODO: Reimplementar timeout no futuro
-            # Exemplo de como adicionar timeout:
-            # results = await asyncio.wait_for(
-            #     asyncio.to_thread(inference_job),
-            #     timeout=5.0
-            # )
-            
             if results is None:
                 return []
                 

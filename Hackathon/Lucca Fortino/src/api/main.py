@@ -41,9 +41,9 @@ class DetectionResponse(BaseModel):
         data['alert_triggered'] = int(data['alert_triggered'])
         return data
 
-from .detector import ObjectDetector
-from .alert_manager import AlertManager
-from .config import Settings
+from src.api.detector import ObjectDetector
+from src.api.alert_manager import AlertManager
+from src.api.config import Settings
 
 app = FastAPI(title="VisionGuard API", version="1.0.0")
 

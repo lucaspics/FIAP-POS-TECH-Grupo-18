@@ -1,26 +1,21 @@
 import sys
-import asyncio
 import logging
 from PyQt5.QtWidgets import QApplication
-from qasync import QEventLoop, QApplication as QAsyncApplication
 from ui.main_window import SecurityCameraApp
 from config.logging_config import logger
 
 def main():
     """Função principal da aplicação."""
     try:
-        # Inicializar aplicação Qt assíncrona
-        app = QAsyncApplication(sys.argv)
-        loop = QEventLoop(app)
-        asyncio.set_event_loop(loop)
+        # Inicializar aplicação Qt
+        app = QApplication(sys.argv)
         
         # Criar e exibir janela principal
         window = SecurityCameraApp()
         window.show()
         
         # Executar loop de eventos
-        with loop:
-            loop.run_forever()
+        sys.exit(app.exec_())
             
     except Exception as e:
         logger.error(f"Erro ao iniciar aplicação: {str(e)}")

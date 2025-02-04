@@ -15,10 +15,8 @@ DEFAULT_CONFIDENCE_THRESHOLD = 0.15
 # Configurações de API
 API_URL = "http://localhost:8000/detect"
 API_TIMEOUT = {
-    "total": 10,        # 10 segundos total
-    "connect": 2,       # 2 segundos para conectar
-    "sock_connect": 2,  # 2 segundos para conectar socket
-    "sock_read": 5      # 5 segundos para ler dados
+    "total": 30,     # 30 segundos total
+    "connect": 5     # 5 segundos para conectar
 }
 
 # Configurações de email

@@ -8,49 +8,134 @@ import platform
 import time
 from config.logging_config import logger
 
+class CameraBackend:
+    """Classe para gerenciar diferentes backends de câmera."""
+    
+    @staticmethod
+    def try_backend(camera_id, backend, timeout=2.0):
+        """Tenta inicializar uma câmera com um backend específico."""
+        start_time = time.time()
+        cap = None
+        backend_name = "padrão" if backend is None else (
+            "DirectShow" if backend == cv2.CAP_DSHOW else str(backend)
+        )
+        
+        try:
+            logger.info(f"Tentando inicializar câmera {camera_id} com backend {backend_name}")
+            
+            # Configuração específica para DirectShow
+            if backend == cv2.CAP_DSHOW:
+                cap = cv2.VideoCapture(camera_id + cv2.CAP_DSHOW)
+            else:
+                cap = cv2.VideoCapture(camera_id)
+            
+            if not cap.isOpened():
+                if cap:
+                    cap.release()
+                logger.warning(f"Não foi possível abrir câmera {camera_id} com backend {backend_name}")
+                return None, f"Não foi possível abrir câmera com backend {backend_name}"
+            
+            # Configurações básicas para estabilidade
+            try:
+                if backend == cv2.CAP_DSHOW:
+                    # Tentar configurar propriedades uma por uma
+                    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+                    time.sleep(0.1)
+                    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+                    time.sleep(0.1)
+                    cap.set(cv2.CAP_PROP_FPS, 30)
+                    time.sleep(0.1)
+                    cap.set(cv2.CAP_PROP_BUFFERSIZE, 3)
+                    time.sleep(0.1)
+                    
+                    # Verificar se as configurações foram aplicadas
+                    actual_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+                    actual_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+                    actual_fps = cap.get(cv2.CAP_PROP_FPS)
+                    
+                    logger.info(f"Configurações da câmera: {actual_width}x{actual_height} @ {actual_fps}fps")
+            except Exception as e:
+                logger.warning(f"Erro ao configurar propriedades da câmera: {str(e)}")
+            
+            # Tenta ler múltiplos frames para garantir estabilidade
+            frames_read = 0
+            required_frames = 3
+            last_frame_time = None
+            
+            while time.time() - start_time < timeout:
+                ret, frame = cap.read()
+                if ret and frame is not None:
+                    current_time = time.time()
+                    if last_frame_time is not None:
+                        frame_interval = current_time - last_frame_time
+                        logger.debug(f"Intervalo entre frames: {frame_interval:.3f}s")
+                    
+                    last_frame_time = current_time
+                    frames_read += 1
+                    
+                    if frames_read >= required_frames:
+                        logger.info(f"Câmera {camera_id} inicializada com sucesso usando backend {backend_name}")
+                        return cap, None
+                else:
+                    frames_read = 0
+                    logger.debug(f"Falha ao ler frame da câmera {camera_id}")
+                
+                time.sleep(0.1)
+            
+            # Se chegou aqui, houve timeout
+            logger.warning(f"Timeout ao tentar ler frames consecutivos da câmera {camera_id} com backend {backend_name}")
+            if cap:
+                cap.release()
+            return None, "Timeout ao tentar ler frames consecutivos"
+            
+        except Exception as e:
+            logger.error(f"Erro ao tentar inicializar câmera {camera_id} com backend {backend_name}: {str(e)}")
+            if cap:
+                cap.release()
+            return None, str(e)
+
 class CameraDetectionThread(QThread):
     """Thread para detectar câmeras sem bloquear a interface."""
     camera_found = pyqtSignal(int, str)
     finished = pyqtSignal()
     
+    def __init__(self):
+        super().__init__()
+        self.backends = []
+        if platform.system() == 'Windows':
+            # No Windows, tenta apenas o backend padrão
+            self.backends = [None]
+        else:
+            # Em outros sistemas, usa apenas o backend padrão
+            self.backends = [None]
+    
     def run(self):
         """Executa a detecção de câmeras."""
-        for i in range(2):  # Testa apenas os primeiros índices para ser mais rápido
-            try:
-                logger.info(f"Testando câmera {i}...")
-                cap = cv2.VideoCapture(i)
-                
-                if not cap.isOpened():
-                    logger.warning(f"Câmera {i} não pôde ser aberta")
-                    continue
-                
-                # Tenta ler um frame com timeout
-                start_time = time.time()
-                ret = False
-                frame = None
-                
-                while time.time() - start_time < 0.3:  # timeout reduzido para 300ms
-                    ret, frame = cap.read()
-                    if ret and frame is not None:
+        for i in range(2):  # Testa apenas os primeiros índices
+            camera_detected = False
+            
+            for backend in self.backends:
+                try:
+                    cap, error = CameraBackend.try_backend(i, backend)
+                    if cap:
+                        # Câmera detectada com sucesso
+                        name = f"Câmera {i}"
+                        if backend == cv2.CAP_DSHOW:
+                            name += " (DirectShow)"
+                        
+                        self.camera_found.emit(i, name)
+                        camera_detected = True
+                        cap.release()
                         break
-                    time.sleep(0.1)  # Pequena pausa entre tentativas
+                    else:
+                        logger.warning(f"Falha ao testar câmera {i}: {error}")
                 
-                # Libera a câmera imediatamente após o teste
-                cap.release()
-                
-                if ret and frame is not None:
-                    name = f"Câmera {i}"
-                    logger.info(f"Câmera encontrada: {name}")
-                    self.camera_found.emit(i, name)
-                else:
-                    logger.warning(f"Não foi possível ler frame da câmera {i}")
-                    
-            except Exception as e:
-                logger.error(f"Erro ao testar câmera {i}: {str(e)}")
-                if 'cap' in locals() and cap is not None:
-                    cap.release()
-                continue
-                    
+                except Exception as e:
+                    logger.error(f"Erro ao testar câmera {i}: {str(e)}")
+            
+            if not camera_detected:
+                logger.warning(f"Não foi possível detectar câmera {i} com nenhum backend")
+        
         self.finished.emit()
         logger.info("Detecção de câmeras concluída")
 
@@ -64,7 +149,7 @@ class VideoSourceDialog(QDialog):
         self.available_cameras = []
         self.setup_ui()
         self.detect_cameras()
-        
+    
     def detect_cameras(self):
         """Inicia a detecção de câmeras em uma thread separada."""
         self.progress = QProgressDialog("Detectando câmeras...", None, 0, 0, self)
@@ -78,13 +163,13 @@ class VideoSourceDialog(QDialog):
         self.detection_thread.finished.connect(self.detection_finished)
         logger.info("Iniciando detecção de câmeras...")
         self.detection_thread.start()
-        
+    
     def add_camera(self, camera_id, name):
         """Adiciona uma câmera encontrada à lista."""
         self.available_cameras.append((camera_id, name))
         self.camera_combo.addItem(name, camera_id)
         logger.info(f"Câmera adicionada: {name} (ID: {camera_id})")
-        
+    
     def detection_finished(self):
         """Chamado quando a detecção de câmeras termina."""
         self.progress.close()
@@ -101,7 +186,7 @@ class VideoSourceDialog(QDialog):
             self.camera_btn.setEnabled(False)
             self.camera_btn.setToolTip("Nenhuma câmera detectada")
             logger.warning("Nenhuma câmera foi detectada")
-        
+    
     def setup_ui(self):
         """Configura a interface do diálogo."""
         self.setWindowTitle("Selecionar Fonte de Vídeo")
@@ -163,7 +248,7 @@ class VideoSourceDialog(QDialog):
         buttons_layout.addWidget(self.ok_btn)
         
         layout.addLayout(buttons_layout)
-        
+    
     def select_camera(self):
         """Seleciona câmera como fonte."""
         self.source_type = "camera"
@@ -172,14 +257,14 @@ class VideoSourceDialog(QDialog):
         self.camera_btn.setEnabled(False)
         self.video_btn.setEnabled(True)
         logger.info("Modo câmera selecionado")
-        
+    
     def select_video(self):
         """Seleciona vídeo como fonte."""
         self.source_type = "video"
         self.camera_widget.hide()
         logger.info("Modo vídeo selecionado")
         self.accept()
-        
+    
     def get_camera_id(self):
         """Retorna o ID da câmera selecionada."""
         camera_id = self.camera_combo.currentData()

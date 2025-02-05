@@ -3,6 +3,7 @@ import cv2
 import json
 import shutil
 import platform
+import time
 from datetime import datetime
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QTabWidget, QFileDialog, QMessageBox
 from PyQt5.QtCore import QTimer
@@ -15,8 +16,71 @@ from config.app_config import (
 from workers.analysis_worker import AnalysisWorker
 from ui.video_tab import VideoTab
 from ui.settings_tab import SettingsTab
-from ui.source_dialog import VideoSourceDialog
+from ui.source_dialog import VideoSourceDialog, CameraBackend
 from utils.video_utils import resize_frame, bgr_to_rgb
+
+class CameraManager:
+    """Gerenciador de recursos da câmera."""
+    
+    def __init__(self):
+        self.cap = None
+        self.camera_id = None
+        self.last_frame_time = None
+        self.reconnect_attempts = 0
+        self.max_reconnect_attempts = 3
+        self.frame_timeout = 2.0  # segundos
+        
+    def is_connection_stale(self):
+        """Verifica se a conexão está estagnada."""
+        if self.last_frame_time is None:
+            return False
+        return time.time() - self.last_frame_time > self.frame_timeout
+    
+    def try_reconnect(self):
+        """Tenta reconectar à câmera."""
+        if self.reconnect_attempts >= self.max_reconnect_attempts:
+            return False
+            
+        logger.info(f"Tentativa de reconexão {self.reconnect_attempts + 1}/{self.max_reconnect_attempts}")
+        self.release()
+        
+        # Tenta cada backend disponível
+        backends = [cv2.CAP_MSMF, cv2.CAP_DSHOW, None] if platform.system() == 'Windows' else [None]
+        
+        for backend in backends:
+            cap, error = CameraBackend.try_backend(self.camera_id, backend)
+            if cap:
+                self.cap = cap
+                self.last_frame_time = time.time()
+                logger.info(f"Reconexão bem sucedida usando backend {backend if backend else 'padrão'}")
+                return True
+        
+        self.reconnect_attempts += 1
+        return False
+    
+    def read_frame(self):
+        """Lê um frame da câmera com verificações de estado."""
+        if not self.cap or not self.cap.isOpened():
+            return False, None
+            
+        ret, frame = self.cap.read()
+        if ret and frame is not None:
+            self.last_frame_time = time.time()
+            self.reconnect_attempts = 0  # Reset contador de tentativas após sucesso
+            return True, frame
+            
+        if self.is_connection_stale():
+            if not self.try_reconnect():
+                return False, None
+        
+        return False, None
+    
+    def release(self):
+        """Libera os recursos da câmera."""
+        if self.cap:
+            self.cap.release()
+            self.cap = None
+        self.last_frame_time = None
 
 class SecurityCameraApp(QWidget):
     """Janela principal da aplicação."""
@@ -25,12 +89,12 @@ class SecurityCameraApp(QWidget):
         super().__init__()
         self.init_variables()
         self.setup_ui()
-        self.clear_alerts()  # Limpa alertas antigos ao iniciar
+        self.clear_alerts()
         
     def init_variables(self):
         """Inicializa as variáveis de controle."""
         self.video_path = None
-        self.cap = None
+        self.camera_manager = CameraManager()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.is_playing = False
@@ -72,6 +136,188 @@ class SecurityCameraApp(QWidget):
         self.settings_tab = SettingsTab(self)
         self.tabs.addTab(self.settings_tab, "Configurações")
         
+    def connect_camera(self):
+        """Conecta à fonte de vídeo."""
+        dialog = VideoSourceDialog(self)
+        if dialog.exec_():
+            if dialog.source_type == "camera":
+                camera_id = dialog.get_camera_id()
+                logger.info(f"Tentando conectar à câmera {camera_id}")
+                
+                try:
+                    self.camera_manager.camera_id = camera_id
+                    backends = [cv2.CAP_MSMF, cv2.CAP_DSHOW, None] if platform.system() == 'Windows' else [None]
+                    
+                    for backend in backends:
+                        cap, error = CameraBackend.try_backend(camera_id, backend)
+                        if cap:
+                            self.camera_manager.cap = cap
+                            self.camera_manager.last_frame_time = time.time()
+                            self.is_camera = True
+                            self.video_tab.enable_controls(True)
+                            logger.info(f"Câmera {camera_id} conectada com sucesso usando backend {backend if backend else 'padrão'}")
+                            self.clear_alerts()
+                            self.setup_alert_timer()
+                            self.toggle_play_pause()
+                            return
+                    
+                    raise Exception("Não foi possível conectar à câmera com nenhum backend disponível")
+                    
+                except Exception as e:
+                    logger.error(f"Erro ao conectar à câmera {camera_id}: {str(e)}")
+                    self.camera_manager.release()
+                    error_msg = "Não foi possível abrir a câmera"
+                    error_msg += "\n\nVerifique:\n" \
+                               "1. Se a câmera está conectada\n" \
+                               "2. Se outro aplicativo não está usando a câmera\n" \
+                               "3. As configurações de privacidade do Windows"
+                    QMessageBox.critical(self, "Erro", error_msg)
+                    
+            else:  # Modo vídeo
+                options = QFileDialog.Options()
+                self.video_path, _ = QFileDialog.getOpenFileName(
+                    self,
+                    "Selecione o vídeo",
+                    "",
+                    "Arquivos de Vídeo (*.mp4 *.avi *.mov)",
+                    options=options
+                )
+                
+                if self.video_path:
+                    self.camera_manager.cap = cv2.VideoCapture(self.video_path)
+                    self.is_camera = False
+                    if self.camera_manager.cap.isOpened():
+                        self.video_tab.enable_controls(True)
+                        logger.info(f"Vídeo carregado: {self.video_path}")
+                        self.clear_alerts()
+                        self.setup_alert_timer()
+                        self.toggle_play_pause()
+                    else:
+                        logger.error("Erro ao carregar o vídeo.")
+                        QMessageBox.critical(self, "Erro", "Não foi possível carregar o vídeo.")
+                        
+    def disconnect_camera(self):
+        """Desconecta a fonte de vídeo."""
+        self.camera_manager.release()
+        self.video_path = None
+        self.is_camera = False
+        self.video_tab.enable_controls(False)
+        self.stop_alert_timer()
+        self.clear_alerts()
+        logger.info("Fonte de vídeo desconectada")
+        
+    def update_frame(self):
+        """Atualiza o frame atual do vídeo."""
+        if not self.camera_manager.cap:
+            return
+            
+        if self.is_camera:
+            ret, frame = self.camera_manager.read_frame()
+        else:
+            ret, frame = self.camera_manager.cap.read()
+            
+        if not ret:
+            if self.is_camera:
+                logger.error("Erro ao ler frame da câmera")
+                self.disconnect_camera()
+                QMessageBox.warning(self, "Aviso", "Conexão com a câmera foi perdida.")
+            else:
+                logger.info("Fim do vídeo.")
+                self.timer.stop()
+                self.is_playing = False
+                self.video_tab.play_pause_button.setText("Play")
+            return
+            
+        # Processar frame
+        frame = resize_frame(frame)
+        self.last_frame = frame.copy()
+        self.video_tab.update_video_frame(frame)
+        
+        # Atualizar tempo
+        if not self.is_camera:
+            self.current_video_time = int(self.camera_manager.cap.get(cv2.CAP_PROP_POS_MSEC))
+            self.video_tab.update_time(self.current_video_time)
+        
+        # Incrementar contador e verificar necessidade de análise
+        self.current_frame_count += 1
+        
+        # Limpar workers concluídos
+        self.active_workers = [w for w in self.active_workers if not w.isFinished()]
+        
+        # Verificar se devemos analisar este frame
+        frames_since_last = self.current_frame_count - self.last_analyzed_frame
+        if (frames_since_last >= self.analysis_interval and 
+            len(self.active_workers) < self.max_concurrent_workers):
+            self.analyze_frame(frame)
+            self.last_analyzed_frame = self.current_frame_count
+            
+    def toggle_play_pause(self):
+        """Alterna entre play e pause."""
+        if self.is_playing:
+            self.timer.stop()
+            self.video_tab.play_pause_button.setText("Play")
+        else:
+            self.timer.start(FRAME_INTERVAL)
+            self.video_tab.play_pause_button.setText("Pause")
+        self.is_playing = not self.is_playing
+        
+    def rewind_video(self):
+        """Retrocede o vídeo em 5 segundos."""
+        if not self.camera_manager.cap or self.is_camera:
+            return
+            
+        current_frame = self.camera_manager.cap.get(cv2.CAP_PROP_POS_FRAMES)
+        fps = self.camera_manager.cap.get(cv2.CAP_PROP_FPS)
+        target_frame = max(0, current_frame - (fps * 5))  # 5 segundos
+        self.camera_manager.cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+        
+    def forward_video(self):
+        """Avança o vídeo em 5 segundos."""
+        if not self.camera_manager.cap or self.is_camera:
+            return
+            
+        current_frame = self.camera_manager.cap.get(cv2.CAP_PROP_POS_FRAMES)
+        fps = self.camera_manager.cap.get(cv2.CAP_PROP_FPS)
+        total_frames = self.camera_manager.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        target_frame = min(total_frames - 1, current_frame + (fps * 5))  # 5 segundos
+        self.camera_manager.cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+        
+    def analyze_frame(self, frame):
+        """Inicia a análise de um frame."""
+        try:
+            frame_rgb = bgr_to_rgb(frame.copy())
+            worker = AnalysisWorker(
+                frame_rgb,
+                self.current_frame_count,
+                self.current_video_time
+            )
+            
+            worker.analysis_complete.connect(self.handle_analysis_result)
+            worker.analysis_error.connect(self.handle_analysis_error)
+            
+            self.active_workers.append(worker)
+            worker.start()
+            
+        except Exception as e:
+            logger.error(f"Erro ao criar worker: {str(e)}")
+            
+    def handle_analysis_result(self, result):
+        """Processa o resultado da análise."""
+        try:
+            detections = result.get('detections', [])
+            self.video_tab.add_log(f"Detecções encontradas: {len(detections)}")
+            
+            for det in detections:
+                det_info = f"- Classe: {det.get('class_name', 'unknown')}, Confiança: {float(det['confidence']):.2f}"
+                self.video_tab.add_log(det_info)
+                    
+        except Exception as e:
+            logger.error(f"Erro ao processar resultado: {str(e)}")
+            
+    def handle_analysis_error(self, error_msg):
+        """Trata erros na análise."""
+        logger.error(f"Erro na análise do frame {self.current_frame_count}: {error_msg}")
+        
     def clear_alerts(self):
         """Limpa todos os arquivos de alerta."""
         try:
@@ -81,7 +327,6 @@ class SecurityCameraApp(QWidget):
             os.makedirs(alerts_dir, exist_ok=True)
             logger.info("Diretório de alertas limpo")
             
-            # Limpar lista de alertas na interface
             if hasattr(self, 'video_tab'):
                 self.video_tab.logs_list.clear()
                 self.processed_alerts.clear()
@@ -94,7 +339,7 @@ class SecurityCameraApp(QWidget):
         if self.alert_timer is None:
             self.alert_timer = QTimer(self)
             self.alert_timer.timeout.connect(self.check_new_alerts)
-        self.alert_timer.start(1000)  # Verifica a cada segundo
+        self.alert_timer.start(1000)
         logger.info("Monitoramento de alertas iniciado")
         
     def stop_alert_timer(self):
@@ -102,7 +347,7 @@ class SecurityCameraApp(QWidget):
         if self.alert_timer is not None:
             self.alert_timer.stop()
             logger.info("Monitoramento de alertas parado")
-        
+            
     def check_new_alerts(self):
         """Verifica se há novos alertas para exibir."""
         try:
@@ -185,188 +430,9 @@ class SecurityCameraApp(QWidget):
         except Exception as e:
             logger.error(f"Erro ao verificar novos alertas: {str(e)}")
             
-    def connect_camera(self):
-        """Conecta à fonte de vídeo."""
-        dialog = VideoSourceDialog(self)
-        if dialog.exec_():
-            if dialog.source_type == "camera":
-                camera_id = dialog.get_camera_id()
-                logger.info(f"Tentando conectar à câmera {camera_id}")
-                
-                try:
-                    # Usa o backend padrão do OpenCV
-                    self.cap = cv2.VideoCapture(camera_id)
-                    if self.cap.isOpened():
-                        # Tenta configurar a resolução
-                        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-                        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-                        self.cap.set(cv2.CAP_PROP_FPS, 30)
-                        
-                        # Tenta ler um frame para confirmar que está funcionando
-                        ret, frame = self.cap.read()
-                        if not ret or frame is None:
-                            raise Exception("Não foi possível ler frame da câmera")
-                            
-                        self.is_camera = True
-                        self.video_tab.enable_controls(True)
-                        logger.info(f"Câmera {camera_id} conectada com sucesso")
-                        self.clear_alerts()
-                        self.setup_alert_timer()
-                        self.toggle_play_pause()
-                    else:
-                        raise Exception("Não foi possível abrir a câmera")
-                        
-                except Exception as e:
-                    logger.error(f"Erro ao conectar à câmera {camera_id}: {str(e)}")
-                    if self.cap:
-                        self.cap.release()
-                        self.cap = None
-                    QMessageBox.critical(self, "Erro", f"Não foi possível conectar à câmera: {str(e)}")
-                    
-            else:
-                options = QFileDialog.Options()
-                self.video_path, _ = QFileDialog.getOpenFileName(
-                    self,
-                    "Selecione o vídeo",
-                    "",
-                    "Arquivos de Vídeo (*.mp4 *.avi *.mov)",
-                    options=options
-                )
-                
-                if self.video_path:
-                    self.cap = cv2.VideoCapture(self.video_path)
-                    self.is_camera = False
-                    if self.cap.isOpened():
-                        self.video_tab.enable_controls(True)
-                        logger.info(f"Vídeo carregado: {self.video_path}")
-                        self.clear_alerts()
-                        self.setup_alert_timer()
-                        self.toggle_play_pause()
-                    else:
-                        logger.error("Erro ao carregar o vídeo.")
-                        QMessageBox.critical(self, "Erro", "Não foi possível carregar o vídeo.")
-                        
-    def disconnect_camera(self):
-        """Desconecta a fonte de vídeo."""
-        if self.cap:
-            self.cap.release()
-            self.cap = None
-            self.video_path = None
-            self.is_camera = False
-            self.video_tab.enable_controls(False)
-            self.stop_alert_timer()
-            self.clear_alerts()
-            logger.info("Fonte de vídeo desconectada")
-                
-    def toggle_play_pause(self):
-        """Alterna entre play e pause."""
-        if self.is_playing:
-            self.timer.stop()
-            self.video_tab.play_pause_button.setText("Play")
-        else:
-            self.timer.start(FRAME_INTERVAL)
-            self.video_tab.play_pause_button.setText("Pause")
-        self.is_playing = not self.is_playing
-        
-    def rewind_video(self):
-        """Retrocede o vídeo em 5 segundos."""
-        if not self.cap or self.is_camera:
-            return
-        current_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
-        target_frame = max(0, current_frame - 150)  # 5 segundos (30 FPS * 5)
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
-        
-    def forward_video(self):
-        """Avança o vídeo em 5 segundos."""
-        if not self.cap or self.is_camera:
-            return
-        current_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
-        total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
-        target_frame = min(total_frames - 1, current_frame + 150)
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
-        
-    def update_frame(self):
-        """Atualiza o frame atual do vídeo."""
-        if not self.cap:
-            return
-            
-        ret, frame = self.cap.read()
-        if not ret:
-            if self.is_camera:
-                logger.error("Erro ao ler frame da câmera")
-                self.disconnect_camera()
-                QMessageBox.warning(self, "Aviso", "Conexão com a câmera foi perdida.")
-            else:
-                logger.info("Fim do vídeo.")
-                self.timer.stop()
-                self.is_playing = False
-                self.video_tab.play_pause_button.setText("Play")
-            return
-            
-        # Processar frame
-        frame = resize_frame(frame)
-        self.last_frame = frame.copy()  # Cache do frame para alertas
-        self.video_tab.update_video_frame(frame)
-        
-        # Atualizar tempo
-        if not self.is_camera:
-            self.current_video_time = int(self.cap.get(cv2.CAP_PROP_POS_MSEC))
-            self.video_tab.update_time(self.current_video_time)
-        
-        # Incrementar contador e verificar necessidade de análise
-        self.current_frame_count += 1
-        
-        # Limpar workers concluídos
-        self.active_workers = [w for w in self.active_workers if not w.isFinished()]
-        
-        # Verificar se devemos analisar este frame
-        frames_since_last = self.current_frame_count - self.last_analyzed_frame
-        if (frames_since_last >= self.analysis_interval and 
-            len(self.active_workers) < self.max_concurrent_workers):
-            self.analyze_frame(frame)
-            self.last_analyzed_frame = self.current_frame_count
-            
-    def analyze_frame(self, frame):
-        """Inicia a análise de um frame."""
-        try:
-            frame_rgb = bgr_to_rgb(frame.copy())
-            worker = AnalysisWorker(
-                frame_rgb,
-                self.current_frame_count,
-                self.current_video_time
-            )
-            
-            # Conectar sinais
-            worker.analysis_complete.connect(self.handle_analysis_result)
-            worker.analysis_error.connect(self.handle_analysis_error)
-            
-            # Adicionar à lista de workers ativos e iniciar
-            self.active_workers.append(worker)
-            worker.start()
-            
-        except Exception as e:
-            logger.error(f"Erro ao criar worker: {str(e)}")
-            
-    def handle_analysis_result(self, result):
-        """Processa o resultado da análise."""
-        try:
-            detections = result.get('detections', [])
-            self.video_tab.add_log(f"Detecções encontradas: {len(detections)}")
-            
-            for det in detections:
-                det_info = f"- Classe: {det.get('class_name', 'unknown')}, Confiança: {float(det['confidence']):.2f}"
-                self.video_tab.add_log(det_info)
-                    
-        except Exception as e:
-            logger.error(f"Erro ao processar resultado: {str(e)}")
-            
-    def handle_analysis_error(self, error_msg):
-        """Trata erros na análise."""
-        logger.error(f"Erro na análise do frame {self.current_frame_count}: {error_msg}")
-        
     def jump_to_alert(self, item):
         """Salta para um momento específico do vídeo."""
-        if not self.cap or self.is_camera:
+        if not self.camera_manager.cap or self.is_camera:
             return
             
         alert_time = item.data(0)
@@ -383,11 +449,11 @@ class SecurityCameraApp(QWidget):
         
         # Posicionar o vídeo no tempo do alerta
         logger.info(f"Pulando para o tempo {alert_time}ms")
-        self.cap.set(cv2.CAP_PROP_POS_MSEC, alert_time)
+        self.camera_manager.cap.set(cv2.CAP_PROP_POS_MSEC, alert_time)
         
         # Ler alguns frames para garantir que estamos no frame correto
         for _ in range(3):
-            ret, frame = self.cap.read()
+            ret, frame = self.camera_manager.cap.read()
             if not ret:
                 break
         

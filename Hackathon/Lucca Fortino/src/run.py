@@ -3,10 +3,13 @@ import sys
 import time
 import os
 import signal
-import socket
-from pathlib import Path
 import logging
 import pkg_resources
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Carregar variáveis de ambiente do .env
+load_dotenv()
 
 # Adiciona o diretório raiz ao PYTHONPATH
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,29 +20,28 @@ if root_dir not in sys.path:
 # Configurar logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("logs/app.log"),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger(__name__)
 
-def is_port_in_use(port):
-    """Verifica se uma porta está em uso."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('localhost', port)) == 0
-
 class VisionGuardRunner:
+    """Gerenciador principal do sistema VisionGuard."""
+    
     def __init__(self):
-        self.api_process = None
         self.frontend_process = None
         self.processes = []
-        self.api_port = 8000
-        self.startup_timeout = 30  # segundos
-
+        
     def check_dependencies(self):
         """Verifica se todas as dependências estão instaladas."""
         logger.info("Verificando dependências...")
         required = {
-            'uvicorn', 'fastapi', 'ultralytics', 'opencv-python',
-            'pyqt5', 'requests', 'python-multipart'
+            'ultralytics', 'opencv-python',
+            'pyqt5', 'numpy', 'torch',
+            'secure-smtplib', 'python-dotenv'
         }
         installed = {pkg.key for pkg in pkg_resources.working_set}
         missing = required - installed
@@ -49,48 +51,6 @@ class VisionGuardRunner:
             logger.error("Por favor, execute: pip install -r requirements.txt")
             return False
         return True
-
-    def wait_for_api(self, timeout):
-        """Aguarda a API ficar disponível."""
-        start_time = time.time()
-        while time.time() - start_time < timeout:
-            if self.api_process.poll() is not None:
-                raise RuntimeError("API falhou ao iniciar")
-            
-            try:
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.connect(('localhost', self.api_port))
-                    logger.info("API está respondendo")
-                    return True
-            except (ConnectionRefusedError, socket.error):
-                time.sleep(1)
-        
-        raise TimeoutError("Timeout aguardando API inicializar")
-
-    def start_api(self):
-        """Inicia o servidor API."""
-        try:
-            if is_port_in_use(self.api_port):
-                raise RuntimeError(f"Porta {self.api_port} já está em uso")
-
-            logger.info("Iniciando API...")
-            env = os.environ.copy()
-            env["PYTHONPATH"] = root_dir + os.pathsep + env.get("PYTHONPATH", "")
-            
-            self.api_process = subprocess.Popen(
-                [sys.executable, "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", str(self.api_port)],
-                env=env,
-                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == 'win32' else 0
-            )
-            self.processes.append(self.api_process)
-            
-            # Aguarda API inicializar com timeout
-            self.wait_for_api(self.startup_timeout)
-            
-        except Exception as e:
-            logger.error(f"Erro ao iniciar API: {str(e)}")
-            self.cleanup()
-            sys.exit(1)
 
     def start_frontend(self):
         """Inicia a interface gráfica."""
@@ -106,7 +66,7 @@ class VisionGuardRunner:
             )
             self.processes.append(self.frontend_process)
             
-            # Verifica se o processo iniciou corretamente
+            # Verificar se o processo iniciou corretamente
             time.sleep(2)
             if self.frontend_process.poll() is not None:
                 raise RuntimeError("Frontend falhou ao iniciar")
@@ -138,12 +98,13 @@ class VisionGuardRunner:
     def verify_files(self):
         """Verifica se todos os arquivos necessários existem."""
         required_files = [
-            os.path.join("src", "api", "main.py"),
-            os.path.join("src", "api", "detector.py"),
-            os.path.join("src", "api", "alert_manager.py"),
-            os.path.join("src", "api", "config.py"),
+            os.path.join("src", "core", "detector.py"),
+            os.path.join("src", "core", "alert_manager.py"),
+            os.path.join("src", "core", "__init__.py"),
+            os.path.join("src", "config", "app_config.py"),
             os.path.join("src", "main.py"),
-            "requirements.txt"
+            "requirements.txt",
+            ".env"  # Adicionado verificação do .env
         ]
         
         missing_files = []
@@ -158,14 +119,9 @@ class VisionGuardRunner:
 
     def check_processes_health(self):
         """Verifica a saúde dos processos em execução."""
-        if self.api_process and self.api_process.poll() is not None:
-            logger.error("API não está mais respondendo")
-            return False
-        
         if self.frontend_process and self.frontend_process.poll() is not None:
             logger.error("Frontend não está mais respondendo")
             return False
-        
         return True
 
     def run(self):
@@ -186,12 +142,20 @@ class VisionGuardRunner:
             if not self.check_dependencies():
                 return
 
-            # Criar diretórios necessários
-            for dir_path in ["logs", "models", "data"]:
-                os.makedirs(os.path.join(root_dir, dir_path), exist_ok=True)
+            # Verificar variáveis de ambiente
+            required_env = ['SMTP_EMAIL', 'SMTP_PASSWORD']
+            missing_env = [var for var in required_env if not os.getenv(var)]
+            if missing_env:
+                logger.error(f"Variáveis de ambiente faltando: {missing_env}")
+                logger.error("Por favor, configure o arquivo .env")
+                return
 
-            # Iniciar componentes
-            self.start_api()
+            # Criar diretórios necessários
+            from config.app_config import LOG_DIRS
+            for dir_path in LOG_DIRS.values():
+                os.makedirs(dir_path, exist_ok=True)
+
+            # Iniciar frontend
             self.start_frontend()
 
             logger.info("Sistema VisionGuard iniciado com sucesso!")
@@ -211,5 +175,6 @@ class VisionGuardRunner:
             self.cleanup()
 
 if __name__ == "__main__":
+    import subprocess
     runner = VisionGuardRunner()
     runner.run()

@@ -10,14 +10,16 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QImage, QPixmap
 from config.logging_config import logger
 from config.app_config import (
-    DEFAULT_ANALYSIS_INTERVAL, FRAME_INTERVAL,
-    MIN_TIME_BETWEEN_ALERTS, LOG_DIRS
+    MODEL_CONFIG,
+    VIDEO_CONFIG,
+    ALERT_CONFIG,
+    LOG_DIRS
 )
 from workers.analysis_worker import AnalysisWorker
 from ui.video_tab import VideoTab
 from ui.settings_tab import SettingsTab
 from ui.source_dialog import VideoSourceDialog, CameraBackend
-from utils.video_utils import resize_frame, bgr_to_rgb
+from core import resize_frame, bgr_to_rgb
 
 class CameraManager:
     """Gerenciador de recursos da câmera."""
@@ -28,7 +30,7 @@ class CameraManager:
         self.last_frame_time = None
         self.reconnect_attempts = 0
         self.max_reconnect_attempts = 3
-        self.frame_timeout = 2.0  # segundos
+        self.frame_timeout = VIDEO_CONFIG['frame_timeout']
         
     def is_connection_stale(self):
         """Verifica se a conexão está estagnada."""
@@ -89,6 +91,7 @@ class SecurityCameraApp(QWidget):
         super().__init__()
         self.init_variables()
         self.setup_ui()
+        self.initialize_analysis()
         self.clear_alerts()
         
     def init_variables(self):
@@ -101,11 +104,11 @@ class SecurityCameraApp(QWidget):
         self.is_camera = False
         
         # Variáveis de análise
-        self.analysis_interval = DEFAULT_ANALYSIS_INTERVAL
+        self.analysis_interval = VIDEO_CONFIG['analysis_interval']
         self.current_frame_count = 0
         self.last_analyzed_frame = 0
         self.active_workers = []
-        self.max_concurrent_workers = 2
+        self.max_concurrent_workers = VIDEO_CONFIG['max_concurrent_workers']
         
         # Cache do último frame para alertas
         self.last_frame = None
@@ -114,6 +117,19 @@ class SecurityCameraApp(QWidget):
         # Controle de alertas processados
         self.processed_alerts = set()
         self.alert_timer = None
+        
+    def initialize_analysis(self):
+        """Inicializa o sistema de análise."""
+        try:
+            # Inicializar worker com modelo e diretório de alertas
+            AnalysisWorker.initialize(
+                model_path=MODEL_CONFIG['path'],
+                alert_dir=LOG_DIRS['alerts']
+            )
+            logger.info("Sistema de análise inicializado com sucesso")
+        except Exception as e:
+            logger.error(f"Erro ao inicializar sistema de análise: {str(e)}")
+            QMessageBox.critical(self, "Erro", "Falha ao inicializar sistema de análise")
         
     def setup_ui(self):
         """Configura a interface do usuário."""
@@ -229,7 +245,7 @@ class SecurityCameraApp(QWidget):
             return
             
         # Processar frame
-        frame = resize_frame(frame)
+        frame = resize_frame(frame, target_height=MODEL_CONFIG['target_height'])
         self.last_frame = frame.copy()
         self.video_tab.update_video_frame(frame)
         
@@ -257,7 +273,7 @@ class SecurityCameraApp(QWidget):
             self.timer.stop()
             self.video_tab.play_pause_button.setText("Play")
         else:
-            self.timer.start(FRAME_INTERVAL)
+            self.timer.start(VIDEO_CONFIG['frame_interval'])
             self.video_tab.play_pause_button.setText("Pause")
         self.is_playing = not self.is_playing
         
@@ -321,7 +337,7 @@ class SecurityCameraApp(QWidget):
     def clear_alerts(self):
         """Limpa todos os arquivos de alerta."""
         try:
-            alerts_dir = os.path.join(LOG_DIRS['base'], 'alerts')
+            alerts_dir = LOG_DIRS['alerts']
             if os.path.exists(alerts_dir):
                 shutil.rmtree(alerts_dir)
             os.makedirs(alerts_dir, exist_ok=True)
@@ -339,7 +355,7 @@ class SecurityCameraApp(QWidget):
         if self.alert_timer is None:
             self.alert_timer = QTimer(self)
             self.alert_timer.timeout.connect(self.check_new_alerts)
-        self.alert_timer.start(1000)
+        self.alert_timer.start(ALERT_CONFIG['min_time_between_alerts'])
         logger.info("Monitoramento de alertas iniciado")
         
     def stop_alert_timer(self):
@@ -351,7 +367,7 @@ class SecurityCameraApp(QWidget):
     def check_new_alerts(self):
         """Verifica se há novos alertas para exibir."""
         try:
-            alerts_dir = os.path.join(LOG_DIRS['base'], 'alerts')
+            alerts_dir = LOG_DIRS['alerts']
             if not os.path.exists(alerts_dir):
                 return
                 
@@ -458,7 +474,7 @@ class SecurityCameraApp(QWidget):
                 break
         
         if ret and frame is not None:
-            frame = resize_frame(frame)
+            frame = resize_frame(frame, target_height=MODEL_CONFIG['target_height'])
             self.video_tab.update_video_frame(frame)
             
             # Usar o tempo do alerta

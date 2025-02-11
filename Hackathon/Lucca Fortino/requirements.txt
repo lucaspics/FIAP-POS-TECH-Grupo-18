@@ -1,34 +1,20 @@
-# Core
-numpy>=1.26.0
-opencv-python>=4.6.0
-PyYAML>=6.0.1
-
-# Deep Learning
-ultralytics>=8.0.196
-torch
-torchvision
-
-# API
-fastapi>=0.104.1
-uvicorn>=0.24.0
-python-multipart>=0.0.6
-pydantic>=2.5.2
-pydantic-settings>=2.1.0
-aiofiles>=23.2.1
-
-# Email
-aiosmtplib>=2.0.2
-
-# Frontend
-PyQt5-sip==12.13.0
-PyQt5-Qt5==5.15.2
-PyQt5==5.15.10
-qasync>=0.24.0
-aiohttp>=3.9.1
-
-# Windows Support
-pywin32>=306; platform_system == "Windows"
+# Dependências principais
+ultralytics>=8.0.0
+torch>=2.0.0
+numpy>=1.21.0
+opencv-python>=4.8.0
+PyQt5>=5.15.0
 
 # Utilitários
-tqdm>=4.66.1
+pillow>=10.0.0
+pyyaml>=6.0.0
+tqdm>=4.65.0
+psutil>=5.9.0
+py-cpuinfo>=9.0.0
+
+# Email
+secure-smtplib>=0.1.1
 python-dotenv>=1.0.0
+
+# Logging e monitoramento
+colorama>=0.4.6

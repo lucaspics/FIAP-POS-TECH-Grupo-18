@@ -1,101 +1,100 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
 
 rem Obter o diretório do script
 set "SCRIPT_DIR=%~dp0"
 cd /d "%SCRIPT_DIR%"
 
-echo Verificando ambiente Python...
-python --version >nul 2>&1
+cls
+echo +====================================+
+echo ^|     VisionGuard - Instalacao       ^|
+echo +====================================+
+echo.
+
+rem Verificar se Python está instalado
+python --version > nul 2>&1
 if errorlevel 1 (
-    echo Python nao encontrado! Por favor, instale o Python e adicione ao PATH.
+    echo Erro: Python nao encontrado!
+    echo Por favor, instale Python 3.8 ou superior.
+    echo https://www.python.org/downloads/
     pause
     exit /b 1
 )
 
-echo Atualizando pip e setuptools...
-python -m pip install --upgrade pip setuptools wheel
+rem Verificar versão do Python
+python -c "import sys; exit(0) if sys.version_info >= (3,8) else exit(1)"
 if errorlevel 1 (
-    echo Erro ao atualizar pip e setuptools!
+    echo Erro: Python 3.8 ou superior eh necessario!
+    echo Versao atual:
+    python --version
     pause
     exit /b 1
 )
 
-echo Removendo PyQt5 existente...
-pip uninstall -y PyQt5 PyQt5-Qt5 PyQt5-sip
+rem Verificar se pip está instalado
+python -m pip --version > nul 2>&1
 if errorlevel 1 (
-    echo Aviso: Erro ao remover PyQt5 existente
-)
-
-echo Instalando dependencias basicas...
-pip install --user numpy>=1.26.0 PyYAML>=6.0.1 tqdm>=4.66.1 python-dotenv>=1.0.0
-if errorlevel 1 (
-    echo Erro ao instalar dependencias basicas!
-    pause
-    exit /b 1
-)
-
-echo Instalando PyTorch...
-pip install --user torch torchvision --index-url https://download.pytorch.org/whl/cu121
-if errorlevel 1 (
-    echo Erro ao instalar PyTorch! Tentando versao CPU...
-    pip install --user torch torchvision --index-url https://download.pytorch.org/whl/cpu
+    echo Erro: pip nao encontrado!
+    echo Tentando instalar pip...
+    python -m ensurepip --default-pip
     if errorlevel 1 (
-        echo Erro ao instalar PyTorch!
+        echo Falha ao instalar pip
         pause
         exit /b 1
     )
 )
 
-echo Instalando OpenCV...
-pip install --user opencv-python>=4.6.0
+echo Atualizando pip...
+python -m pip install --upgrade pip
+
+rem Criar e ativar ambiente virtual
+if not exist "venv" (
+    echo Criando ambiente virtual...
+    python -m venv venv
+    if errorlevel 1 (
+        echo Erro ao criar ambiente virtual!
+        pause
+        exit /b 1
+    )
+)
+
+echo Ativando ambiente virtual...
+call venv\Scripts\activate
 if errorlevel 1 (
-    echo Erro ao instalar OpenCV!
+    echo Erro ao ativar ambiente virtual!
     pause
     exit /b 1
 )
 
-echo Instalando Ultralytics...
-pip install --user ultralytics>=8.0.196
+echo Instalando dependencias...
+python -m pip install -r requirements.txt
 if errorlevel 1 (
-    echo Erro ao instalar Ultralytics!
+    echo Erro ao instalar dependencias!
     pause
     exit /b 1
 )
 
-echo Instalando FastAPI e dependencias...
-pip install --user "fastapi>=0.104.1" "uvicorn>=0.24.0" "python-multipart>=0.0.6" "pydantic>=2.5.2" "pydantic-settings>=2.1.0" "aiofiles>=23.2.1"
-if errorlevel 1 (
-    echo Erro ao instalar FastAPI!
-    pause
-    exit /b 1
+rem Criar diretórios necessários
+echo Criando diretorios...
+if not exist "logs" mkdir logs
+if not exist "logs\alerts" mkdir logs\alerts
+if not exist "logs\frames" mkdir logs\frames
+if not exist "logs\metrics" mkdir logs\metrics
+if not exist "logs\results" mkdir logs\results
+if not exist "models" mkdir models
+
+rem Verificar modelo
+if not exist "models\best.pt" (
+    echo AVISO: Modelo nao encontrado em models\best.pt
+    echo Por favor, coloque seu modelo treinado neste local.
 )
 
-echo Instalando PyQt5...
-pip install --user --no-deps PyQt5-sip==12.13.0
-pip install --user --no-deps PyQt5-Qt5==5.15.2
-pip install --user --no-deps PyQt5==5.15.10
-if errorlevel 1 (
-    echo Erro ao instalar PyQt5!
-    pause
-    exit /b 1
-)
+echo.
+echo +====================================+
+echo ^|      Instalacao Concluida!         ^|
+echo +====================================+
+echo.
+echo Execute run.bat para iniciar o sistema
+echo.
 
-echo Instalando dependencias auxiliares...
-pip install --user "qasync>=0.24.0" "aiohttp>=3.9.1" "aiosmtplib>=2.0.2"
-if errorlevel 1 (
-    echo Erro ao instalar dependencias auxiliares!
-    pause
-    exit /b 1
-)
-
-echo Verificando instalacao...
-python -c "from PyQt5 import QtCore; import cv2; import torch; import ultralytics; print('OpenCV version:', cv2.__version__); print('PyTorch version:', torch.__version__); print('Ultralytics version:', ultralytics.__version__); print('PyQt5 version:', QtCore.QT_VERSION_STR)"
-if errorlevel 1 (
-    echo AVISO: Algumas dependencias podem nao ter sido instaladas corretamente.
-    pause
-    exit /b 1
-)
-
-echo Instalacao concluida com sucesso!
 pause

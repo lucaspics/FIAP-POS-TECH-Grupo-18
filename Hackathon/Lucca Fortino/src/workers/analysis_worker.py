@@ -1,88 +1,101 @@
 import cv2
 import time
-import requests
 from datetime import datetime
 from PyQt5.QtCore import QThread, pyqtSignal
 from config.logging_config import logger
-from config.app_config import (
-    API_URL, API_TIMEOUT, DEFAULT_CONFIDENCE_THRESHOLD,
-    MAX_RETRIES, RETRY_DELAY
+from config.app_config import MODEL_CONFIG
+from core import (
+    ObjectDetector,
+    AlertManager,
+    Detection,
+    DetectionResult,
+    resize_frame,
+    bgr_to_rgb,
+    rgb_to_bgr
 )
-
-# Sessão HTTP compartilhada para todos os workers
-_session = requests.Session()
-_session.headers.update({'Connection': 'keep-alive'})
 
 class AnalysisWorker(QThread):
     """Worker thread para processar análises de frames."""
     analysis_complete = pyqtSignal(dict)  # Sinal emitido quando a análise é concluída
     analysis_error = pyqtSignal(str)      # Sinal emitido em caso de erro
     
+    # Compartilhar instâncias entre workers
+    _detector = None
+    _alert_manager = None
+    
+    @classmethod
+    def initialize(cls, model_path: str, alert_dir: str):
+        """
+        Inicializa as instâncias compartilhadas do detector e gerenciador de alertas.
+        
+        Args:
+            model_path: Caminho para o modelo YOLO
+            alert_dir: Diretório para salvar alertas
+        """
+        if cls._detector is None:
+            try:
+                cls._detector = ObjectDetector(model_path)
+                logger.info("Detector inicializado com sucesso")
+            except Exception as e:
+                logger.error(f"Erro ao inicializar detector: {str(e)}")
+                raise
+                
+        if cls._alert_manager is None:
+            try:
+                cls._alert_manager = AlertManager(alert_dir)
+                logger.info("AlertManager inicializado com sucesso")
+            except Exception as e:
+                logger.error(f"Erro ao inicializar AlertManager: {str(e)}")
+                raise
+    
     def __init__(self, frame_rgb, frame_number=None, video_time=0):
+        """
+        Inicializa o worker.
+        
+        Args:
+            frame_rgb: Frame em formato RGB
+            frame_number: Número do frame (opcional)
+            video_time: Tempo do vídeo em ms
+        """
         super().__init__()
         self.frame_rgb = frame_rgb.copy()
         self.frame_number = frame_number
         self.video_time = video_time
         
-    def analyze(self):
+        # Verificar se as instâncias compartilhadas foram inicializadas
+        if self._detector is None or self._alert_manager is None:
+            raise RuntimeError("Worker não inicializado. Chame AnalysisWorker.initialize() primeiro")
+    
+    async def analyze(self):
         """Realiza a análise do frame."""
         try:
-            # Converter frame para JPEG em memória
-            _, img_bytes = cv2.imencode('.jpg', cv2.cvtColor(self.frame_rgb, cv2.COLOR_RGB2BGR))
-            img_bytes = img_bytes.tobytes()
+            # Converter frame para BGR para o detector
+            frame_bgr = rgb_to_bgr(self.frame_rgb)
             
-            # Configurar parâmetros da requisição
-            params = {
-                'confidence': DEFAULT_CONFIDENCE_THRESHOLD,
-                'return_image': True,  # API irá salvar a imagem se necessário
-                'video_time': self.video_time  # Tempo do vídeo em ms
-            }
-            
-            # Usar timeouts mais adequados
-            timeout = (
-                min(API_TIMEOUT.get('total', 30), 20),  # 20 segundos total
-                min(API_TIMEOUT.get('connect', 5), 5)   # 5 segundos para conectar
+            # Realizar detecção
+            result = await self._detector.detect(
+                frame_bgr,
+                conf_threshold=MODEL_CONFIG['confidence_threshold']
             )
             
-            for attempt in range(MAX_RETRIES):
-                try:
-                    files = {
-                        'frame': ('frame.jpg', img_bytes, 'image/jpeg')
-                    }
-                    
-                    response = _session.post(
-                        API_URL,
-                        files=files,
-                        params=params,
-                        timeout=timeout,
-                        verify=False
-                    )
-                    
-                    if response.status_code != 200:
-                        raise Exception(f"Erro na API: {response.status_code}")
-                    
-                    result = response.json()
-                    if not result or 'detections' not in result:
-                        raise Exception("Resposta inválida da API")
-                    
-                    return result
-                    
-                except (requests.Timeout, requests.ConnectionError) as e:
-                    if attempt < MAX_RETRIES - 1:
-                        time.sleep(RETRY_DELAY * (attempt + 1))  # Backoff exponencial
-                        continue
-                    raise Exception(f"Erro após {MAX_RETRIES} tentativas: {str(e)}")
-                    
-                except Exception as e:
-                    if attempt < MAX_RETRIES - 1:
-                        time.sleep(RETRY_DELAY)
-                        continue
-                    raise
-                    
+            # Processar alerta se necessário
+            alert_triggered = await self._alert_manager.process_detection(
+                result,
+                frame_bgr,
+                self.video_time
+            )
+            
+            # Converter resultado para formato compatível com a interface atual
+            return {
+                "timestamp": result.timestamp.isoformat(),
+                "detections": [det.to_dict() for det in result.detections],
+                "alert_triggered": int(alert_triggered)
+            }
+            
         except Exception as e:
             self._handle_error(e)
             return None
-
+    
     def _handle_error(self, error):
         """Trata erros ocorridos durante a análise."""
         error_msg = str(error) if str(error).strip() else "Erro desconhecido"
@@ -90,16 +103,34 @@ class AnalysisWorker(QThread):
         full_error = f"Erro na análise do {frame_info}: {error_msg}"
         logger.error(full_error)
         self.analysis_error.emit(full_error)
-
+    
     def run(self):
         """Executa a análise em uma thread separada."""
         try:
-            result = self.analyze()
+            import asyncio
+            # Criar novo event loop para a thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            # Executar análise
+            result = loop.run_until_complete(self.analyze())
+            
+            # Fechar loop
+            loop.close()
+            
             if result:
                 self.analysis_complete.emit(result)
             else:
                 self.analysis_error.emit("Análise não retornou resultados")
+                
         except Exception as e:
             error_msg = f"Erro durante análise do frame {self.frame_number}: {str(e)}"
             logger.error(error_msg)
             self.analysis_error.emit(error_msg)
+            
+        finally:
+            # Garantir que o loop seja fechado
+            try:
+                loop.close()
+            except Exception:
+                pass

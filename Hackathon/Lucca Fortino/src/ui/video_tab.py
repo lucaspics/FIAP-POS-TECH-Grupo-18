@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont, QPixmap, QColor
 from PyQt5.QtCore import Qt
 from config.logging_config import logger
-from config.app_config import VIDEO_WIDTH, VIDEO_HEIGHT, OVERLAY_PATH
+from config.app_config import VIDEO_CONFIG
 from utils.video_utils import frame_to_pixmap
 
 class CompactProgressBar(QProgressBar):
@@ -130,24 +130,25 @@ class VideoTab(QWidget):
     def setup_video_area(self):
         """Configura a área de exibição do vídeo."""
         self.video_label = QLabel("Feed de vídeo aparecerá aqui")
-        self.video_label.setFixedSize(VIDEO_WIDTH, VIDEO_HEIGHT)
+        self.video_label.setFixedSize(VIDEO_CONFIG['width'], VIDEO_CONFIG['height'])
         self.video_label.setStyleSheet("background-color: black;")
         self.left_layout.addWidget(self.video_label)
         
         # Overlay
         self.overlay_label = QLabel(self.video_label)
-        self.overlay_label.setFixedSize(VIDEO_WIDTH, VIDEO_HEIGHT)
+        self.overlay_label.setFixedSize(VIDEO_CONFIG['width'], VIDEO_CONFIG['height'])
         self.overlay_label.setAlignment(Qt.AlignCenter)
         self.overlay_label.setStyleSheet("background: transparent;")
         
         # Carregar overlay
-        if os.path.exists(OVERLAY_PATH):
-            self.overlay_pixmap = QPixmap(OVERLAY_PATH).scaled(
-                VIDEO_WIDTH, VIDEO_HEIGHT, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        if os.path.exists(VIDEO_CONFIG['overlay_path']):
+            self.overlay_pixmap = QPixmap(VIDEO_CONFIG['overlay_path']).scaled(
+                VIDEO_CONFIG['width'], VIDEO_CONFIG['height'], 
+                Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
             self.overlay_label.setPixmap(self.overlay_pixmap)
         else:
-            logger.warning(f"Overlay não encontrado: {OVERLAY_PATH}")
+            logger.warning(f"Overlay não encontrado: {VIDEO_CONFIG['overlay_path']}")
             
     def setup_playback_controls(self):
         """Configura os controles de reprodução."""

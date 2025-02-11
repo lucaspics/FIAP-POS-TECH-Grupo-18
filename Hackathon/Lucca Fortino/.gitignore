@@ -6,3 +6,25 @@ dist/
 # Ignorar arquivos temporários do sistema
 *.pyc
 __pycache__/
+*.py[cod]
+*$py.class
+
+# Ambiente virtual
+venv/
+env/
+ENV/
+.env
+
+# Logs e dados gerados
+logs/
+*.log
+
+# IDEs e editores
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Arquivos de configuração local
+*.env.local

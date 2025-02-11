@@ -45,7 +45,7 @@ VIDEO_CONFIG = {
     'frame_interval': 30,  # ms entre frames
     'analysis_interval': 5,  # frames entre análises
     'max_concurrent_workers': 2,
-    'frame_timeout': 2.0,  # segundos
+    'frame_timeout': 5.0,  # segundos - tempo maior para tolerar atrasos
     'width': 640,  # largura do vídeo
     'height': 480,  # altura do vídeo
     'overlay_path': BASE_DIR / 'art' / 'cam_overlay.psd'

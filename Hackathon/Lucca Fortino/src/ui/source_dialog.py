@@ -36,6 +36,7 @@ class CameraInfo:
         self.height = 0
         self.fps = 0
         self.backend_name = self._get_backend_name()
+        self.capture = None  # Armazena a instância do VideoCapture
     
     def _get_backend_name(self) -> str:
         """Retorna o nome do backend."""
@@ -66,7 +67,7 @@ class CameraBackend:
             Lista de backends
         """
         if platform.system() == 'Windows':
-            return [cv2.CAP_MSMF, cv2.CAP_DSHOW, None]
+            return [None, cv2.CAP_DSHOW, cv2.CAP_MSMF]  # Tenta backend padrão primeiro
         return [None]  # Backend padrão para outros sistemas
     
     @staticmethod
@@ -93,7 +94,13 @@ class CameraBackend:
             # Inicializar câmera
             if backend == cv2.CAP_DSHOW:
                 cap = cv2.VideoCapture(camera_id + cv2.CAP_DSHOW)
+            elif backend == cv2.CAP_MSMF:
+                cap = cv2.VideoCapture(camera_id + cv2.CAP_MSMF)
+            elif backend is None:
+                # Para backend padrão, tenta diretamente o ID
+                cap = cv2.VideoCapture(camera_id, cv2.CAP_ANY)
             else:
+                # Outros backends
                 cap = cv2.VideoCapture(camera_id)
             
             if not cap.isOpened():
@@ -162,6 +169,7 @@ class CameraDetectionThread(QThread):
             current_step = 0
             
             for i in range(2):
+                camera_found = False
                 for backend in backends:
                     current_step += 1
                     self.progress.emit(current_step, total_steps)
@@ -174,9 +182,16 @@ class CameraDetectionThread(QThread):
                         info.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                         info.fps = cap.get(cv2.CAP_PROP_FPS)
                         
-                        cap.release()
+                        info.capture = cap  # Armazena a instância do VideoCapture
                         self.camera_found.emit(info)
-                        break  # Câmera encontrada, tentar próximo ID
+                        camera_found = True
+                        break  # Câmera encontrada com este backend
+                
+                if camera_found:
+                    break  # Se encontrou câmera, para a busca completamente
+                
+                if cap:  # Se não deu certo, libera a câmera
+                    cap.release()
             
             self.finished.emit()
             
@@ -194,7 +209,14 @@ class VideoSourceDialog(QDialog):
         self.camera_id = 0
         self.available_cameras: List[CameraInfo] = []
         self.setup_ui()
-        self.detect_cameras()
+    
+    def closeEvent(self, event):
+        """Evento chamado quando o diálogo é fechado."""
+        try:
+            self._cleanup_cameras()
+        except Exception as e:
+            logger.error(f"Erro ao fechar diálogo: {str(e)}")
+        super().closeEvent(event)
     
     def setup_ui(self):
         """Configura a interface do diálogo."""
@@ -230,7 +252,7 @@ class VideoSourceDialog(QDialog):
             self.status_frame.setFrameStyle(QFrame.StyledPanel)
             status_layout = QVBoxLayout(self.status_frame)
             
-            self.status_label = QLabel("Detectando câmeras...")
+            self.status_label = QLabel("Clique em 'Conectar a Câmera' para buscar câmeras disponíveis")
             self.status_label.setAlignment(Qt.AlignCenter)
             status_layout.addWidget(self.status_label)
             
@@ -247,7 +269,6 @@ class VideoSourceDialog(QDialog):
             self.camera_btn = QPushButton("Câmera")
             self.camera_btn.setIcon(QIcon.fromTheme("camera-web"))
             self.camera_btn.clicked.connect(self.select_camera)
-            self.camera_btn.setEnabled(False)
             source_layout.addWidget(self.camera_btn)
             
             self.video_btn = QPushButton("Arquivo de Vídeo")
@@ -256,6 +277,13 @@ class VideoSourceDialog(QDialog):
             source_layout.addWidget(self.video_btn)
             
             layout.addLayout(source_layout)
+
+            # Botão de busca de câmeras
+            self.search_camera_btn = QPushButton("Conectar a Câmera")
+            self.search_camera_btn.setIcon(QIcon.fromTheme("camera-web"))
+            self.search_camera_btn.clicked.connect(self.detect_cameras)
+            self.search_camera_btn.hide()
+            layout.addWidget(self.search_camera_btn)
             
             # Seletor de câmera
             self.camera_frame = QFrame()
@@ -304,9 +332,32 @@ class VideoSourceDialog(QDialog):
         error.setStyleSheet("color: red;")
         layout.addWidget(error)
     
+    def _cleanup_cameras(self):
+        """Libera os recursos das câmeras."""
+        try:
+            for camera in self.available_cameras:
+                if camera.capture:
+                    camera.capture.release()
+                    camera.capture = None
+            self.available_cameras.clear()
+            self.camera_combo.clear()
+        except Exception as e:
+            logger.error(f"Erro ao limpar câmeras: {str(e)}")
+    
     def detect_cameras(self):
         """Inicia a detecção de câmeras."""
         try:
+            # Limpa câmeras anteriores
+            self._cleanup_cameras()
+            
+            # Atualiza interface
+            self.status_label.setText("Detectando câmeras...")
+            self.status_label.setStyleSheet("")
+            self.search_camera_btn.setEnabled(False)
+            self.camera_frame.hide()
+            self.ok_btn.hide()
+            
+            # Inicia thread de detecção
             self.detection_thread = CameraDetectionThread()
             self.detection_thread.camera_found.connect(self._add_camera)
             self.detection_thread.progress.connect(self._update_progress)
@@ -317,6 +368,7 @@ class VideoSourceDialog(QDialog):
             logger.error(f"Erro ao iniciar detecção: {str(e)}")
             self.status_label.setText("Erro ao detectar câmeras")
             self.status_label.setStyleSheet("color: red;")
+            self.search_camera_btn.setEnabled(True)
     
     def _add_camera(self, camera: CameraInfo):
         """
@@ -352,18 +404,21 @@ class VideoSourceDialog(QDialog):
         """Finaliza o processo de detecção."""
         try:
             self.progress_label.hide()
+            self.search_camera_btn.setEnabled(True)
             
             if self.available_cameras:
                 self.status_label.setText(
                     f"Câmeras detectadas: {len(self.available_cameras)}"
                 )
                 self.status_label.setStyleSheet("color: green;")
-                self.camera_btn.setEnabled(True)
+                self.camera_frame.show()  # Mostra o frame de seleção
+                self.ok_btn.show()  # Mostra o botão OK
                 logger.info("Detecção concluída com sucesso")
             else:
                 self.status_label.setText("Nenhuma câmera detectada")
                 self.status_label.setStyleSheet("color: red;")
-                self.camera_btn.setEnabled(False)
+                self.camera_frame.hide()
+                self.ok_btn.hide()
                 logger.warning("Nenhuma câmera detectada")
             
         except Exception as e:
@@ -392,8 +447,9 @@ class VideoSourceDialog(QDialog):
         """Seleciona câmera como fonte."""
         try:
             self.source_type = "camera"
-            self.camera_frame.show()
-            self.ok_btn.show()
+            self.camera_frame.hide()  # Esconde o frame de seleção até detectar câmeras
+            self.ok_btn.hide()  # Esconde o botão OK até selecionar uma câmera
+            self.search_camera_btn.show()  # Mostra o botão de busca
             self.camera_btn.setStyleSheet("""
                 QPushButton {
                     background-color: #4CAF50;
@@ -401,6 +457,8 @@ class VideoSourceDialog(QDialog):
                 }
             """)
             self.video_btn.setStyleSheet("")
+            self.status_label.setText("Clique em 'Conectar a Câmera' para buscar câmeras disponíveis")
+            self.status_label.setStyleSheet("")
             logger.info("Modo câmera selecionado")
             
         except Exception as e:
@@ -424,6 +482,24 @@ class VideoSourceDialog(QDialog):
         except Exception as e:
             logger.error(f"Erro ao selecionar vídeo: {str(e)}")
     
+    def get_camera_info(self) -> Optional[CameraInfo]:
+        """
+        Retorna as informações completas da câmera selecionada.
+        
+        Returns:
+            Informações da câmera ou None se nenhuma selecionada
+        """
+        try:
+            camera = self.camera_combo.currentData()
+            if camera:
+                logger.info(f"Câmera retornada: {camera}")
+                return camera
+            return None
+            
+        except Exception as e:
+            logger.error(f"Erro ao obter câmera: {str(e)}")
+            return None
+    
     def get_camera_id(self) -> Optional[int]:
         """
         Retorna o ID da câmera selecionada.
@@ -432,12 +508,9 @@ class VideoSourceDialog(QDialog):
             ID da câmera ou None se nenhuma selecionada
         """
         try:
-            camera = self.camera_combo.currentData()
-            if camera:
-                logger.info(f"Câmera retornada: {camera}")
-                return camera.id
-            return None
+            camera = self.get_camera_info()
+            return camera.id if camera else None
             
         except Exception as e:
-            logger.error(f"Erro ao obter câmera: {str(e)}")
+            logger.error(f"Erro ao obter ID da câmera: {str(e)}")
             return None

@@ -150,17 +150,21 @@ def frame_to_pixmap(frame: np.ndarray,
         if rgb_frame is None:
             return None
         
-        # Criar QImage
+        # Criar QImage com cópia dos dados
         height, width, channel = rgb_frame.shape
         bytes_per_line = channel * width
-        q_image = QImage(rgb_frame.data, 
-                        width, 
-                        height, 
-                        bytes_per_line, 
-                        QImage.Format_RGB888)
+        
+        # Fazer uma cópia contígua dos dados
+        rgb_data = rgb_frame.copy()
+        q_image = QImage(rgb_data.data,
+                        width,
+                        height,
+                        bytes_per_line,
+                        QImage.Format_RGB888).copy()  # Fazer uma cópia do QImage
         
         # Converter para QPixmap
-        return QPixmap.fromImage(q_image)
+        pixmap = QPixmap.fromImage(q_image)
+        return pixmap
         
     except Exception as e:
         logger.error(f"Erro ao converter frame para QPixmap: {str(e)}")

@@ -35,7 +35,14 @@ class CameraManager:
         """
         if self.last_frame_time is None:
             return False
-        return time.time() - self.last_frame_time > self.frame_timeout
+            
+        elapsed = time.time() - self.last_frame_time
+        is_stale = elapsed > self.frame_timeout
+        
+        if is_stale:
+            logger.warning(f"Conexão estagnada - {elapsed:.1f}s sem frames (timeout: {self.frame_timeout}s)")
+        
+        return is_stale
     
     def try_reconnect(self) -> bool:
         """
@@ -44,12 +51,20 @@ class CameraManager:
         Returns:
             bool indicando sucesso da reconexão
         """
+        if self.camera_id is None:
+            logger.error("Tentativa de reconexão sem ID de câmera válido")
+            return False
+            
         if self.reconnect_attempts >= self.max_reconnect_attempts:
             logger.warning("Número máximo de tentativas de reconexão atingido")
             return False
             
         logger.info(f"Tentativa de reconexão {self.reconnect_attempts + 1}/{self.max_reconnect_attempts}")
-        self.release()
+        
+        # Libera a câmera atual mas mantém o camera_id
+        if self.cap:
+            self.cap.release()
+            self.cap = None
         
         # Tenta cada backend disponível
         backends = [cv2.CAP_MSMF, cv2.CAP_DSHOW, None] if platform.system() == 'Windows' else [None]
@@ -73,19 +88,37 @@ class CameraManager:
             Tupla (sucesso, frame)
         """
         if not self.cap or not self.cap.isOpened():
+            logger.warning("Tentativa de leitura com câmera fechada")
             return False, None
             
-        ret, frame = self.cap.read()
-        if ret and frame is not None:
-            self.last_frame_time = time.time()
-            self.reconnect_attempts = 0  # Reset contador de tentativas após sucesso
-            return True, frame
+        try:
+            ret, frame = self.cap.read()
+            if ret and frame is not None:
+                self.last_frame_time = time.time()
+                if self.reconnect_attempts > 0:
+                    logger.info("Leitura normalizada após falhas")
+                self.reconnect_attempts = 0  # Reset contador de tentativas após sucesso
+                return True, frame
+                
+            # Falha na leitura
+            logger.warning(f"Falha ao ler frame: ret={ret}, frame={'vazio' if frame is None else 'ok'}")
             
-        if self.is_connection_stale():
-            if not self.try_reconnect():
-                return False, None
-        
-        return False, None
+            # Verifica se é uma falha temporária ou permanente
+            if self.is_connection_stale():
+                if not self.try_reconnect():
+                    return False, None
+                # Tenta ler novamente após reconexão
+                ret, frame = self.cap.read()
+                if ret and frame is not None:
+                    self.last_frame_time = time.time()
+                    logger.info("Frame recuperado após reconexão")
+                    return True, frame
+            
+            return False, None
+            
+        except Exception as e:
+            logger.error(f"Erro ao ler frame: {str(e)}")
+            return False, None
     
     def get_video_info(self) -> dict:
         """
@@ -162,7 +195,6 @@ class CameraManager:
                 self.cap.release()
                 self.cap = None
             self.last_frame_time = None
-            self.camera_id = None
             self.video_path = None
             self.is_camera = False
             logger.info("Recursos da câmera liberados")

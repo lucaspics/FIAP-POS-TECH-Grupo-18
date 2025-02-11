@@ -232,6 +232,12 @@ class VideoTab(QWidget):
         error_label.setStyleSheet("color: red;")
         layout.addWidget(error_label)
     
+    def __init__(self, parent=None):
+        """Inicializa a aba de vídeo."""
+        super().__init__(parent)
+        self.current_pixmap = None  # Armazena referência ao pixmap atual
+        self.setup_ui()
+
     def update_frame(self, frame):
         """
         Atualiza o frame de vídeo.
@@ -242,7 +248,9 @@ class VideoTab(QWidget):
         try:
             pixmap = frame_to_pixmap(frame)
             if pixmap:
-                self.video_label.setPixmap(pixmap)
+                # Manter referência ao pixmap atual
+                self.current_pixmap = pixmap
+                self.video_label.setPixmap(self.current_pixmap)
                 self.overlay_label.raise_()
             else:
                 logger.warning("Frame inválido recebido")

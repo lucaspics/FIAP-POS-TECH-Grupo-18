@@ -140,16 +140,10 @@ class ObjectDetector:
             if hasattr(torch, 'cuda'):
                 torch.cuda.empty_cache()
 
-            # Redimensionar imagem se necessário
-            if image.shape[0] != self.target_height:
-                scale = self.target_height / image.shape[0]
-                new_width = int(image.shape[1] * scale)
-                image = cv2.resize(image, (new_width, self.target_height))
-
-            # Executar inferência de forma assíncrona
+            # Executar inferência de forma assíncrona na imagem original
             def inference_job():
                 with torch.no_grad():
-                    return self.model(image, conf=threshold)[0]
+                    return self.model(image, conf=threshold, imgsz=image.shape[:2])[0]
 
             results = await asyncio.to_thread(inference_job)
             
@@ -208,21 +202,20 @@ class ObjectDetector:
                 x1, y1, x2, y2 = map(int, det.bbox)
                 label = f"{det.class_name} {det.confidence:.2f}"
                 
-                # Cor baseada na confiança (verde para alta confiança, vermelho para baixa)
-                confidence_color = int(255 * det.confidence)
-                color = (0, confidence_color, 255 - confidence_color)  # BGR
+                # Usar cor amarela fixa para o bbox (BGR)
+                color = (0, 255, 255)  # Amarelo em BGR
                 
-                # Desenhar bbox
-                cv2.rectangle(img_draw, (x1, y1), (x2, y2), color, 2)
+                # Desenhar bbox com espessura maior para melhor visibilidade
+                cv2.rectangle(img_draw, (x1, y1), (x2, y2), color, 3)
                 
-                # Adicionar label
-                font_scale = 0.6
-                font_thickness = 1
+                # Configurar texto
+                font_scale = 1.0  # Aumentar tamanho da fonte
+                font_thickness = 2
                 (label_width, label_height), _ = cv2.getTextSize(
                     label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness
                 )
                 
-                # Desenhar background do texto
+                # Desenhar background do texto em amarelo
                 cv2.rectangle(
                     img_draw,
                     (x1, y1 - label_height - 10),
@@ -231,14 +224,14 @@ class ObjectDetector:
                     -1
                 )
                 
-                # Desenhar texto
+                # Desenhar texto em preto com fonte maior
                 cv2.putText(
                     img_draw,
                     label,
                     (x1, y1 - 5),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     font_scale,
-                    (0, 0, 0),  # Cor preta para o texto
+                    (0, 0, 0),  # Preto
                     font_thickness
                 )
                 

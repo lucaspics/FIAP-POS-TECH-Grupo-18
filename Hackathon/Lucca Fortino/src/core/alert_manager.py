@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import List, Dict, Optional
 import asyncio
 import shutil
-from .detector import Detection, DetectionResult
+from .detector import Detection, DetectionResult, ObjectDetector
 from .email_sender import EmailSender
 from config.app_config import ALERT_CONFIG, LOG_DIRS
 from config.logging_config import get_logger
@@ -18,16 +18,18 @@ from config.logging_config import get_logger
 class AlertManager:
     """Gerenciador de alertas otimizado para processamento local."""
     
-    def __init__(self, min_confidence: float = 0.25, max_alerts: int = 1000):
+    def __init__(self, detector: ObjectDetector, min_confidence: float = 0.25, max_alerts: int = 1000):
         """
         Inicializa o gerenciador de alertas.
         
         Args:
+            detector: Instância do detector de objetos
             min_confidence: Confiança mínima para gerar alertas
             max_alerts: Número máximo de alertas a manter
         """
         self.logger = get_logger('alert_manager')
         self.alert_dir = Path(LOG_DIRS['alerts'])
+        self.detector = detector
         self.min_confidence = min_confidence
         self.max_alerts = max_alerts
         self.total_alerts = 0
@@ -175,7 +177,6 @@ class AlertManager:
                 with open(json_path, 'r', encoding='utf-8') as f:
                     saved_data = json.load(f)
                 self.logger.info(f"Dados lidos do arquivo: {saved_data}")
-            
             # Salvar imagem se disponível
             if frame is not None and ALERT_CONFIG['save_frames']:
                 try:
@@ -190,9 +191,13 @@ class AlertManager:
                     images_dir = self.alert_dir / 'images'
                     images_dir.mkdir(parents=True, exist_ok=True)
                     
+                    # Desenhar detecções no frame
+                    frame_with_detections = self.detector.draw_detections(frame, high_confidence_detections)
+                    
                     # Salvar imagem
                     image_path = images_dir / f"{alert_id}.jpg"
                     self.logger.info(f"Tentando salvar imagem em: {image_path}")
+                    success = cv2.imwrite(str(image_path), frame_with_detections)
                     success = cv2.imwrite(str(image_path), frame)
                     
                     if success:
@@ -234,10 +239,11 @@ class AlertManager:
             # Enviar email se habilitado
             if ALERT_CONFIG['enable_email_alerts'] and ALERT_CONFIG['notification_email']:
                 try:
+                    # Usar o mesmo frame com detecções para o email
                     asyncio.create_task(self._send_alert_email(
                         ALERT_CONFIG['notification_email'],
                         high_confidence_detections,
-                        frame,
+                        frame_with_detections if frame is not None else None,
                         video_time
                     ))
                 except Exception as e:

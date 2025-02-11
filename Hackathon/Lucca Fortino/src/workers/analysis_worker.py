@@ -48,6 +48,7 @@ class AnalysisWorker(QThread):
         if cls._alert_manager is None:
             try:
                 cls._alert_manager = AlertManager(
+                    detector=cls._detector,
                     min_confidence=MODEL_CONFIG['confidence_threshold'],
                     max_alerts=1000
                 )

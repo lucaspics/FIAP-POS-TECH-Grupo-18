@@ -1,267 +1,339 @@
-import os
-import cv2
+"""
+Aba de visualização e controle de vídeo.
+"""
+
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-    QLabel, QListWidget, QTextEdit, QListWidgetItem,
-    QProgressBar, QFrame
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QTextEdit,
+    QFrame,
+    QProgressBar,
+    QSpacerItem,
+    QSizePolicy
 )
-from PyQt5.QtGui import QFont, QPixmap, QColor
-from PyQt5.QtCore import Qt
-from config.logging_config import logger
-from config.app_config import VIDEO_CONFIG
-from utils.video_utils import frame_to_pixmap
+from PyQt5.QtGui import QFont, QPixmap, QIcon
+from PyQt5.QtCore import Qt, pyqtSignal
+from datetime import datetime
+from config.logging_config import get_logger
+from config.app_config import VIDEO_CONFIG, UI_CONFIG
+from core.video_utils import frame_to_pixmap
+
+logger = get_logger('video_tab')
 
 class CompactProgressBar(QProgressBar):
     """Barra de progresso customizada mais compacta."""
     def __init__(self):
         super().__init__()
-        self.setFixedHeight(4)  # Altura reduzida
+        self.setFixedHeight(4)
         self.setTextVisible(False)
-
-class AlertItemWidget(QWidget):
-    """Widget customizado para item de alerta."""
-    def __init__(self, pixmap, time_ms, class_name="", confidence=0.0):
-        super().__init__()
-        
-        # Layout principal sem margens
-        layout = QHBoxLayout()
-        layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(0)
-        self.setLayout(layout)
-
-        # Thumbnail fixo à esquerda
-        thumb_label = QLabel()
-        thumb_label.setFixedSize(60, 45)
-        if pixmap:
-            thumb_label.setPixmap(pixmap.scaled(60, 45, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        else:
-            thumb_label.setText("No thumb")
-        layout.addWidget(thumb_label)
-
-        # Container vertical para textos e barra
-        right_container = QWidget()
-        right_layout = QVBoxLayout()
-        right_layout.setContentsMargins(8, 0, 0, 0)  # Margem apenas à esquerda
-        right_layout.setSpacing(0)
-        right_container.setLayout(right_layout)
-
-        # Classe e confiança (em destaque)
-        if class_name:
-            class_conf = QLabel(f"{class_name} ({confidence:.1%})")
-            class_conf.setFont(QFont("Arial", 10, QFont.Bold))
-            right_layout.addWidget(class_conf)
-
-        # Tempo (menor destaque)
-        time_label = QLabel(f"{int(time_ms/1000)}s")
-        time_label.setFont(QFont("Arial", 8))
-        time_label.setStyleSheet("color: #666;")
-        right_layout.addWidget(time_label)
-
-        # Barra de confiança
-        if confidence > 0:
-            conf_bar = CompactProgressBar()
-            conf_bar.setMaximum(100)
-            conf_bar.setValue(int(confidence * 100))
-
-            # Cor baseada na confiança
-            r = min(255, int(confidence * 255 * 2))
-            g = max(0, int(255 * (1 - confidence * 2)))
-            color = f"rgb({r}, {g}, 0)"
-
-            conf_bar.setStyleSheet(f"""
-                QProgressBar {{
-                    border: none;
-                    background-color: #f0f0f0;
-                }}
-                QProgressBar::chunk {{
-                    background-color: {color};
-                }}
-            """)
-            right_layout.addWidget(conf_bar)
-
-        layout.addWidget(right_container)
-        layout.addStretch()  # Empurra tudo para a esquerda
+        self.setStyleSheet("""
+            QProgressBar {
+                border: none;
+                background-color: #f0f0f0;
+                border-radius: 2px;
+            }
+            QProgressBar::chunk {
+                background-color: #4CAF50;
+                border-radius: 2px;
+            }
+        """)
 
 class VideoTab(QWidget):
     """Aba principal com controles de vídeo e visualização."""
     
+    # Sinais
+    connect_clicked = pyqtSignal()
+    disconnect_clicked = pyqtSignal()
+    play_pause_clicked = pyqtSignal()
+    rewind_clicked = pyqtSignal()
+    forward_clicked = pyqtSignal()
+    
     def __init__(self, parent=None):
+        """Inicializa a aba de vídeo."""
         super().__init__(parent)
-        self.parent = parent
         self.setup_ui()
         
     def setup_ui(self):
         """Configura a interface da aba de vídeo."""
-        self.video_layout = QHBoxLayout()
-        self.setLayout(self.video_layout)
-        
-        # Layout esquerdo (vídeo e controles)
-        self.setup_left_panel()
-        
-        # Layout direito (logs)
-        self.setup_right_panel()
-        
-    def setup_left_panel(self):
-        """Configura o painel esquerdo com vídeo e controles."""
-        self.left_layout = QVBoxLayout()
-        self.video_layout.addLayout(self.left_layout)
-        
-        # Título
-        self.video_title = QLabel("Monitoramento de Vídeo")
-        self.video_title.setFont(QFont("Arial", 16, QFont.Bold))
-        self.left_layout.addWidget(self.video_title)
-        
-        # Área de vídeo
-        self.setup_video_area()
-        
-        # Tempo
-        self.time_label = QLabel("Tempo: 0s")
-        self.left_layout.addWidget(self.time_label)
-        
-        # Botão de conexão
-        self.connect_button = QPushButton("Conectar Fonte de Vídeo")
-        self.connect_button.setStyleSheet("background-color: #4CAF50; color: white; font-size: 14px;")
-        self.connect_button.clicked.connect(self.parent.connect_camera if self.parent else None)
-        self.left_layout.addWidget(self.connect_button)
-        
-        # Controles de reprodução
-        self.setup_playback_controls()
-        
-    def setup_video_area(self):
+        try:
+            # Layout principal
+            layout = QVBoxLayout(self)
+            layout.setContentsMargins(10, 10, 10, 10)
+            layout.setSpacing(10)
+            
+            # Título
+            title = QLabel(UI_CONFIG['window_title'])
+            title.setFont(QFont("Arial", 16, QFont.Bold))
+            title.setAlignment(Qt.AlignCenter)
+            layout.addWidget(title)
+            
+            # Área de vídeo
+            self.setup_video_area(layout)
+            
+            # Controles
+            self.setup_controls(layout)
+            
+            # Logs
+            self.setup_logs(layout)
+            
+            # Estado inicial
+            self.is_playing = False
+            self.enable_controls(False)
+            
+            logger.info("Interface da aba de vídeo inicializada")
+            
+        except Exception as e:
+            logger.error(f"Erro ao configurar interface: {str(e)}")
+            self.show_error_ui()
+    
+    def setup_video_area(self, layout):
         """Configura a área de exibição do vídeo."""
-        self.video_label = QLabel("Feed de vídeo aparecerá aqui")
-        self.video_label.setFixedSize(VIDEO_CONFIG['width'], VIDEO_CONFIG['height'])
-        self.video_label.setStyleSheet("background-color: black;")
-        self.left_layout.addWidget(self.video_label)
-        
-        # Overlay
-        self.overlay_label = QLabel(self.video_label)
-        self.overlay_label.setFixedSize(VIDEO_CONFIG['width'], VIDEO_CONFIG['height'])
-        self.overlay_label.setAlignment(Qt.AlignCenter)
-        self.overlay_label.setStyleSheet("background: transparent;")
-        
-        # Carregar overlay
-        if os.path.exists(VIDEO_CONFIG['overlay_path']):
-            self.overlay_pixmap = QPixmap(VIDEO_CONFIG['overlay_path']).scaled(
-                VIDEO_CONFIG['width'], VIDEO_CONFIG['height'], 
-                Qt.KeepAspectRatio, Qt.SmoothTransformation
-            )
-            self.overlay_label.setPixmap(self.overlay_pixmap)
-        else:
-            logger.warning(f"Overlay não encontrado: {VIDEO_CONFIG['overlay_path']}")
+        try:
+            # Container do vídeo
+            video_frame = QFrame()
+            video_frame.setFrameStyle(QFrame.StyledPanel)
+            video_frame.setStyleSheet("""
+                QFrame {
+                    background-color: black;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                }
+            """)
             
-    def setup_playback_controls(self):
+            video_layout = QVBoxLayout(video_frame)
+            video_layout.setContentsMargins(0, 0, 0, 0)
+            
+            # Label do vídeo
+            self.video_label = QLabel()
+            self.video_label.setFixedSize(VIDEO_CONFIG['width'], VIDEO_CONFIG['height'])
+            self.video_label.setAlignment(Qt.AlignCenter)
+            self.video_label.setStyleSheet("color: white;")
+            self.video_label.setText("Aguardando fonte de vídeo...")
+            video_layout.addWidget(self.video_label, alignment=Qt.AlignCenter)
+            
+            # Overlay
+            self.overlay_label = QLabel(self.video_label)
+            self.overlay_label.setFixedSize(VIDEO_CONFIG['width'], VIDEO_CONFIG['height'])
+            self.overlay_label.setAlignment(Qt.AlignCenter)
+            self.overlay_label.setStyleSheet("background: transparent;")
+            
+            # Carregar overlay se existir
+            if VIDEO_CONFIG.get('overlay_path'):
+                try:
+                    overlay = QPixmap(VIDEO_CONFIG['overlay_path'])
+                    if not overlay.isNull():
+                        self.overlay_label.setPixmap(
+                            overlay.scaled(
+                                VIDEO_CONFIG['width'],
+                                VIDEO_CONFIG['height'],
+                                Qt.KeepAspectRatio,
+                                Qt.SmoothTransformation
+                            )
+                        )
+                except Exception as e:
+                    logger.error(f"Erro ao carregar overlay: {str(e)}")
+            
+            layout.addWidget(video_frame)
+            
+            # Barra de progresso
+            self.progress_bar = CompactProgressBar()
+            layout.addWidget(self.progress_bar)
+            
+            # Tempo
+            self.time_label = QLabel("00:00:00")
+            self.time_label.setAlignment(Qt.AlignCenter)
+            layout.addWidget(self.time_label)
+            
+        except Exception as e:
+            logger.error(f"Erro ao configurar área de vídeo: {str(e)}")
+            raise
+    
+    def setup_controls(self, layout):
         """Configura os controles de reprodução."""
-        self.controls_layout = QHBoxLayout()
-        
-        # Play/Pause
-        self.play_pause_button = QPushButton("Play")
-        self.play_pause_button.setEnabled(False)
-        self.play_pause_button.setStyleSheet("background-color: #008CBA; color: white; font-size: 14px;")
-        self.play_pause_button.clicked.connect(self.parent.toggle_play_pause if self.parent else None)
-        self.controls_layout.addWidget(self.play_pause_button)
-        
-        # Retroceder
-        self.rewind_button = QPushButton("Retroceder 5s")
-        self.rewind_button.setEnabled(False)
-        self.rewind_button.setStyleSheet("background-color: #f44336; color: white; font-size: 14px;")
-        self.rewind_button.clicked.connect(self.parent.rewind_video if self.parent else None)
-        self.controls_layout.addWidget(self.rewind_button)
-        
-        # Avançar
-        self.forward_button = QPushButton("Avançar 5s")
-        self.forward_button.setEnabled(False)
-        self.forward_button.setStyleSheet("background-color: #f44336; color: white; font-size: 14px;")
-        self.forward_button.clicked.connect(self.parent.forward_video if self.parent else None)
-        self.controls_layout.addWidget(self.forward_button)
-        
-        self.left_layout.addLayout(self.controls_layout)
-        
-    def setup_right_panel(self):
-        """Configura o painel direito com logs."""
-        self.right_layout = QVBoxLayout()
-        self.video_layout.addLayout(self.right_layout)
-        
-        # Logs de análise
-        self.logs_title = QLabel("Logs de Análise")
-        self.logs_title.setFont(QFont("Arial", 12, QFont.Bold))
-        self.right_layout.addWidget(self.logs_title)
-        
-        self.analysis_logs = QTextEdit()
-        self.analysis_logs.setReadOnly(True)
-        self.analysis_logs.setFixedWidth(300)
-        self.analysis_logs.setFixedHeight(200)
-        self.analysis_logs.setStyleSheet("background-color: #f0f0f0;")
-        self.right_layout.addWidget(self.analysis_logs)
-        
-        # Lista de alertas
-        self.alerts_title = QLabel("Alertas Detectados")
-        self.alerts_title.setFont(QFont("Arial", 12, QFont.Bold))
-        self.right_layout.addWidget(self.alerts_title)
-        
-        self.logs_list = QListWidget()
-        self.logs_list.setFixedWidth(300)
-        self.logs_list.setStyleSheet("""
-            QListWidget {
-                background-color: white;
-                border: 1px solid #ddd;
-            }
-            QListWidget::item {
-                padding: 0px;
-                border-bottom: 1px solid #eee;
-            }
-            QListWidget::item:hover {
-                background-color: #f5f5f5;
-            }
-        """)
-        self.logs_list.itemClicked.connect(self.parent.jump_to_alert if self.parent else None)
-        self.right_layout.addWidget(self.logs_list)
-        
-    def update_video_frame(self, frame):
-        """Atualiza o frame de vídeo exibido."""
-        if frame is not None:
-            pixmap = frame_to_pixmap(frame)
-            self.video_label.setPixmap(pixmap)
-            self.overlay_label.raise_()
+        try:
+            controls = QWidget()
+            controls_layout = QHBoxLayout(controls)
+            controls_layout.setContentsMargins(0, 0, 0, 0)
             
-    def update_time(self, time_ms):
-        """Atualiza o label de tempo."""
-        self.time_label.setText(f"Tempo: {int(time_ms/1000)}s")
+            # Botão de conexão
+            self.connect_button = QPushButton("Conectar")
+            self.connect_button.setIcon(QIcon.fromTheme("network-wired"))
+            self.connect_button.clicked.connect(self.connect_clicked.emit)
+            self.connect_button.setStyleSheet("""
+                QPushButton {
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #45a049;
+                }
+                QPushButton:disabled {
+                    background-color: #cccccc;
+                }
+            """)
+            controls_layout.addWidget(self.connect_button)
+            
+            # Espaçador
+            controls_layout.addSpacerItem(
+                QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+            )
+            
+            # Controles de reprodução
+            self.rewind_button = QPushButton("⏪")
+            self.rewind_button.setFont(QFont("Arial", 14))
+            self.rewind_button.clicked.connect(self.rewind_clicked.emit)
+            controls_layout.addWidget(self.rewind_button)
+            
+            self.play_pause_button = QPushButton("⏵")
+            self.play_pause_button.setFont(QFont("Arial", 14))
+            self.play_pause_button.clicked.connect(self._handle_play_pause)
+            controls_layout.addWidget(self.play_pause_button)
+            
+            self.forward_button = QPushButton("⏩")
+            self.forward_button.setFont(QFont("Arial", 14))
+            self.forward_button.clicked.connect(self.forward_clicked.emit)
+            controls_layout.addWidget(self.forward_button)
+            
+            # Espaçador
+            controls_layout.addSpacerItem(
+                QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+            )
+            
+            layout.addWidget(controls)
+            
+        except Exception as e:
+            logger.error(f"Erro ao configurar controles: {str(e)}")
+            raise
+    
+    def setup_logs(self, layout):
+        """Configura a área de logs."""
+        try:
+            # Título dos logs
+            logs_title = QLabel("Logs de Análise")
+            logs_title.setFont(QFont("Arial", 10, QFont.Bold))
+            layout.addWidget(logs_title)
+            
+            # Área de logs
+            self.logs_text = QTextEdit()
+            self.logs_text.setReadOnly(True)
+            self.logs_text.setMaximumHeight(150)
+            self.logs_text.setStyleSheet("""
+                QTextEdit {
+                    background-color: #f5f5f5;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    padding: 5px;
+                }
+            """)
+            layout.addWidget(self.logs_text)
+            
+        except Exception as e:
+            logger.error(f"Erro ao configurar logs: {str(e)}")
+            raise
+    
+    def show_error_ui(self):
+        """Exibe interface de erro."""
+        layout = QVBoxLayout(self)
+        error_label = QLabel("Erro ao carregar interface")
+        error_label.setStyleSheet("color: red;")
+        layout.addWidget(error_label)
+    
+    def update_frame(self, frame):
+        """
+        Atualiza o frame de vídeo.
         
-    def add_log(self, message):
-        """Adiciona uma mensagem aos logs de análise."""
-        self.analysis_logs.append(message)
+        Args:
+            frame: Frame OpenCV para exibir
+        """
+        try:
+            pixmap = frame_to_pixmap(frame)
+            if pixmap:
+                self.video_label.setPixmap(pixmap)
+                self.overlay_label.raise_()
+            else:
+                logger.warning("Frame inválido recebido")
+                
+        except Exception as e:
+            logger.error(f"Erro ao atualizar frame: {str(e)}")
+    
+    def update_time(self, time_ms: int):
+        """
+        Atualiza o tempo exibido.
         
-    def add_alert(self, pixmap, time_ms, class_name="", confidence=0.0):
-        """Adiciona um novo alerta à lista na posição correta baseada no timestamp."""
-        # Criar widget personalizado para o alerta
-        alert_widget = AlertItemWidget(pixmap, time_ms, class_name, confidence)
+        Args:
+            time_ms: Tempo em milissegundos
+        """
+        try:
+            hours = time_ms // 3600000
+            minutes = (time_ms % 3600000) // 60000
+            seconds = (time_ms % 60000) // 1000
+            self.time_label.setText(f"{hours:02d}:{minutes:02d}:{seconds:02d}")
+        except Exception as e:
+            logger.error(f"Erro ao atualizar tempo: {str(e)}")
+    
+    def set_playing(self, is_playing: bool):
+        """
+        Define o estado de reprodução.
         
-        # Criar item da lista
-        list_item = QListWidgetItem()
-        list_item.setData(0, time_ms)  # Armazenar tempo para navegação
-        list_item.setSizeHint(alert_widget.sizeHint())
+        Args:
+            is_playing: Se está reproduzindo
+        """
+        try:
+            self.is_playing = is_playing
+            self.play_pause_button.setText("⏸" if is_playing else "⏵")
+        except Exception as e:
+            logger.error(f"Erro ao definir estado de reprodução: {str(e)}")
+    
+    def enable_controls(self, enabled: bool):
+        """
+        Habilita/desabilita controles.
         
-        # Encontrar a posição correta para inserir o alerta
-        insert_pos = 0
-        for i in range(self.logs_list.count()):
-            current_item = self.logs_list.item(i)
-            current_time = current_item.data(0)
-            if time_ms < current_time:
-                break
-            insert_pos = i + 1
+        Args:
+            enabled: Se os controles devem estar habilitados
+        """
+        try:
+            self.play_pause_button.setEnabled(enabled)
+            self.rewind_button.setEnabled(enabled)
+            self.forward_button.setEnabled(enabled)
+            self.connect_button.setEnabled(not enabled)
+        except Exception as e:
+            logger.error(f"Erro ao habilitar controles: {str(e)}")
+    
+    def add_log(self, message: str):
+        """
+        Adiciona mensagem aos logs.
         
-        # Inserir na posição correta
-        self.logs_list.insertItem(insert_pos, list_item)
-        self.logs_list.setItemWidget(list_item, alert_widget)
-        logger.info(f"Alerta adicionado na posição {insert_pos} com timestamp {time_ms}ms")
-        
-    def enable_controls(self, enabled=True):
-        """Habilita ou desabilita os controles de vídeo."""
-        self.play_pause_button.setEnabled(enabled)
-        
-        # Só habilita os controles de navegação se não for câmera
-        is_camera = self.parent.is_camera if self.parent else False
-        self.rewind_button.setEnabled(enabled and not is_camera)
-        self.forward_button.setEnabled(enabled and not is_camera)
-        self.connect_button.setEnabled(not enabled)  # Inverso dos outros
+        Args:
+            message: Mensagem para adicionar
+        """
+        try:
+            self.logs_text.append(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
+            self.logs_text.verticalScrollBar().setValue(
+                self.logs_text.verticalScrollBar().maximum()
+            )
+        except Exception as e:
+            logger.error(f"Erro ao adicionar log: {str(e)}")
+    
+    def clear_display(self):
+        """Limpa a exibição."""
+        try:
+            self.video_label.clear()
+            self.video_label.setText("Aguardando fonte de vídeo...")
+            self.time_label.setText("00:00:00")
+            self.progress_bar.setValue(0)
+            self.logs_text.clear()
+        except Exception as e:
+            logger.error(f"Erro ao limpar display: {str(e)}")
+    
+    def _handle_play_pause(self):
+        """Manipula clique no botão play/pause."""
+        try:
+            self.play_pause_clicked.emit()
+        except Exception as e:
+            logger.error(f"Erro ao manipular play/pause: {str(e)}")

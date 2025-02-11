@@ -49,5 +49,5 @@ if /i "%opcao%"=="S" (
 :START_SYSTEM
 echo Iniciando VisionGuard System...
 echo.
-python "%SCRIPT_DIR%src/run.py"
+python "%SCRIPT_DIR%src/main.py"
 pause

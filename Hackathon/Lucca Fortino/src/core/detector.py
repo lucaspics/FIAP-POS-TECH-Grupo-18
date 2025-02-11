@@ -1,3 +1,7 @@
+"""
+Detector de objetos otimizado para processamento local.
+"""
+
 from ultralytics import YOLO
 import numpy as np
 import cv2
@@ -16,6 +20,7 @@ from ultralytics.nn.modules.block import C2f, Bottleneck, C3, C2, SPPF, C3TR
 from ultralytics.nn.modules.head import Detect
 from torch.nn.modules.conv import Conv2d
 import functools
+from config.app_config import MODEL_CONFIG
 
 # Classes necessárias para carregar o modelo
 SAFE_CLASSES = [
@@ -63,15 +68,17 @@ class DetectionResult:
 class ObjectDetector:
     """Detector de objetos otimizado para processamento local."""
     
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: Optional[str] = None):
         """
         Inicializa o detector de objetos.
         
         Args:
-            model_path: Caminho para o modelo YOLOv8 treinado
+            model_path: Caminho para o modelo YOLOv8 treinado. Se None, usa o caminho do MODEL_CONFIG
         """
         self.logger = logging.getLogger(__name__)
-        self.model_path = Path(model_path)
+        self.model_path = Path(model_path) if model_path else Path(MODEL_CONFIG['path'])
+        self.confidence_threshold = MODEL_CONFIG['confidence_threshold']
+        self.target_height = MODEL_CONFIG['target_height']
         self.start_time = datetime.now()
         self.total_detections = 0
         self._load_model()
@@ -103,7 +110,7 @@ class ObjectDetector:
     def _warmup_model(self):
         """Realiza warmup do modelo com uma imagem em branco."""
         try:
-            dummy_image = np.zeros((320, 320, 3), dtype=np.uint8)
+            dummy_image = np.zeros((self.target_height, self.target_height, 3), dtype=np.uint8)
             with torch.no_grad():
                 for _ in range(3):
                     self.model(dummy_image)
@@ -114,26 +121,35 @@ class ObjectDetector:
         except Exception as e:
             self.logger.error(f"Erro durante warmup: {str(e)}")
 
-    async def detect(self, image: np.ndarray, conf_threshold: float = 0.25) -> DetectionResult:
+    async def detect(self, image: np.ndarray, conf_threshold: Optional[float] = None) -> DetectionResult:
         """
         Realiza detecção de objetos em uma imagem.
         
         Args:
             image: Imagem numpy array (BGR)
-            conf_threshold: Threshold de confiança mínima
+            conf_threshold: Threshold de confiança mínima. Se None, usa o valor do MODEL_CONFIG
             
         Returns:
             DetectionResult contendo as detecções encontradas
         """
         try:
+            # Usar threshold das configurações se não especificado
+            threshold = conf_threshold if conf_threshold is not None else self.confidence_threshold
+
             # Limpar memória CUDA se disponível
             if hasattr(torch, 'cuda'):
                 torch.cuda.empty_cache()
 
+            # Redimensionar imagem se necessário
+            if image.shape[0] != self.target_height:
+                scale = self.target_height / image.shape[0]
+                new_width = int(image.shape[1] * scale)
+                image = cv2.resize(image, (new_width, self.target_height))
+
             # Executar inferência de forma assíncrona
             def inference_job():
                 with torch.no_grad():
-                    return self.model(image, conf=conf_threshold)[0]
+                    return self.model(image, conf=threshold)[0]
 
             results = await asyncio.to_thread(inference_job)
             
@@ -191,7 +207,10 @@ class ObjectDetector:
             try:
                 x1, y1, x2, y2 = map(int, det.bbox)
                 label = f"{det.class_name} {det.confidence:.2f}"
-                color = (0, 255, 255)  # Amarelo em BGR
+                
+                # Cor baseada na confiança (verde para alta confiança, vermelho para baixa)
+                confidence_color = int(255 * det.confidence)
+                color = (0, confidence_color, 255 - confidence_color)  # BGR
                 
                 # Desenhar bbox
                 cv2.rectangle(img_draw, (x1, y1), (x2, y2), color, 2)
@@ -243,5 +262,7 @@ class ObjectDetector:
             "path": str(self.model_path),
             "classes": self.classes,
             "type": self.model.task,
-            "total_detections": self.total_detections
+            "total_detections": self.total_detections,
+            "confidence_threshold": self.confidence_threshold,
+            "target_height": self.target_height
         }

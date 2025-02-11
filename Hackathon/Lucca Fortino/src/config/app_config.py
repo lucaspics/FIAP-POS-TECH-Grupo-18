@@ -14,17 +14,27 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Diretórios do sistema
+DIRS = {
+    'logs': BASE_DIR / 'logs',
+    'tools': BASE_DIR / 'tools',
+    'docs': BASE_DIR / 'docs',
+    'data': BASE_DIR / 'data',
+    'models': BASE_DIR / 'models'
+}
+
+# Subdiretórios de logs
 LOG_DIRS = {
-    'base': os.path.join(BASE_DIR, 'logs'),
-    'alerts': os.path.join(BASE_DIR, 'logs', 'alerts'),
-    'frames': os.path.join(BASE_DIR, 'logs', 'frames'),
-    'metrics': os.path.join(BASE_DIR, 'logs', 'metrics'),
-    'results': os.path.join(BASE_DIR, 'logs', 'results')
+    'base': DIRS['logs'],
+    'alerts': DIRS['logs'] / 'alerts',
+    'frames': DIRS['logs'] / 'frames',
+    'metrics': DIRS['logs'] / 'metrics',
+    'results': DIRS['logs'] / 'results',
+    'errors': DIRS['logs'] / 'errors'
 }
 
 # Configurações do modelo
 MODEL_CONFIG = {
-    'path': os.path.join(BASE_DIR, 'models', 'best.pt'),
+    'path': DIRS['models'] / 'best.pt',
     'confidence_threshold': 0.25,
     'alert_threshold': 0.5,
     'target_height': 320
@@ -38,7 +48,7 @@ VIDEO_CONFIG = {
     'frame_timeout': 2.0,  # segundos
     'width': 640,  # largura do vídeo
     'height': 480,  # altura do vídeo
-    'overlay_path': os.path.join(BASE_DIR, 'art', 'cam_overlay.psd')
+    'overlay_path': BASE_DIR / 'art' / 'cam_overlay.psd'
 }
 
 # Configurações de alertas
@@ -59,15 +69,6 @@ UI_CONFIG = {
     'update_interval': 1000,  # ms
     'max_log_entries': 100
 }
-
-# Constantes para compatibilidade com código legado
-VIDEO_WIDTH = VIDEO_CONFIG['width']
-VIDEO_HEIGHT = VIDEO_CONFIG['height']
-OVERLAY_PATH = VIDEO_CONFIG['overlay_path']
-DEFAULT_EMAIL = ALERT_CONFIG['notification_email']
-DEFAULT_ANALYSIS_INTERVAL = VIDEO_CONFIG['analysis_interval']
-FRAME_INTERVAL = VIDEO_CONFIG['frame_interval']
-MIN_TIME_BETWEEN_ALERTS = ALERT_CONFIG['min_time_between_alerts']
 
 def validate_config() -> bool:
     """
@@ -127,6 +128,7 @@ def get_config() -> Dict[str, Any]:
         Dict com todas as configurações
     """
     return {
+        'dirs': DIRS,
         'log_dirs': LOG_DIRS,
         'model': MODEL_CONFIG,
         'video': VIDEO_CONFIG,

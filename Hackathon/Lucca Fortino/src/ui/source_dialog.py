@@ -1,29 +1,96 @@
+"""
+Diálogo para seleção da fonte de vídeo.
+"""
+
 from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QPushButton,
-    QLabel, QComboBox, QProgressDialog
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QComboBox,
+    QProgressDialog,
+    QFrame,
+    QMessageBox,
+    QSpacerItem,
+    QSizePolicy
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtGui import QIcon, QFont
 import cv2
 import platform
 import time
-from config.logging_config import logger
+from typing import Optional, Tuple, List, Dict
+from config.logging_config import get_logger
+from config.app_config import VIDEO_CONFIG
+
+logger = get_logger('source_dialog')
+
+class CameraInfo:
+    """Informações sobre uma câmera."""
+    def __init__(self, id: int, name: str, backend: Optional[int] = None):
+        self.id = id
+        self.name = name
+        self.backend = backend
+        self.width = 0
+        self.height = 0
+        self.fps = 0
+        self.backend_name = self._get_backend_name()
+    
+    def _get_backend_name(self) -> str:
+        """Retorna o nome do backend."""
+        if self.backend is None:
+            return "Padrão"
+        elif self.backend == cv2.CAP_DSHOW:
+            return "DirectShow"
+        elif self.backend == cv2.CAP_MSMF:
+            return "Media Foundation"
+        else:
+            return f"Backend {self.backend}"
+    
+    def __str__(self) -> str:
+        return (
+            f"{self.name} ({self.width}x{self.height} @ {self.fps:.1f}fps) "
+            f"[{self.backend_name}]"
+        )
 
 class CameraBackend:
-    """Classe para gerenciar diferentes backends de câmera."""
+    """Gerenciador de backends de câmera."""
     
     @staticmethod
-    def try_backend(camera_id, backend, timeout=2.0):
-        """Tenta inicializar uma câmera com um backend específico."""
+    def get_available_backends() -> List[Optional[int]]:
+        """
+        Retorna lista de backends disponíveis para o sistema.
+        
+        Returns:
+            Lista de backends
+        """
+        if platform.system() == 'Windows':
+            return [cv2.CAP_MSMF, cv2.CAP_DSHOW, None]
+        return [None]  # Backend padrão para outros sistemas
+    
+    @staticmethod
+    def try_backend(camera_id: int,
+                   backend: Optional[int],
+                   timeout: float = 2.0) -> Tuple[Optional[cv2.VideoCapture], Optional[str]]:
+        """
+        Tenta inicializar uma câmera com um backend específico.
+        
+        Args:
+            camera_id: ID da câmera
+            backend: Backend a usar
+            timeout: Tempo máximo de tentativa
+            
+        Returns:
+            Tupla (captura, erro)
+        """
         start_time = time.time()
         cap = None
-        backend_name = "padrão" if backend is None else (
-            "DirectShow" if backend == cv2.CAP_DSHOW else str(backend)
-        )
         
         try:
-            logger.info(f"Tentando inicializar câmera {camera_id} com backend {backend_name}")
+            logger.info(f"Tentando câmera {camera_id} com backend {backend}")
             
-            # Configuração específica para DirectShow
+            # Inicializar câmera
             if backend == cv2.CAP_DSHOW:
                 cap = cv2.VideoCapture(camera_id + cv2.CAP_DSHOW)
             else:
@@ -32,241 +99,345 @@ class CameraBackend:
             if not cap.isOpened():
                 if cap:
                     cap.release()
-                logger.warning(f"Não foi possível abrir câmera {camera_id} com backend {backend_name}")
-                return None, f"Não foi possível abrir câmera com backend {backend_name}"
+                return None, "Não foi possível abrir a câmera"
             
-            # Configurações básicas para estabilidade
-            try:
-                if backend == cv2.CAP_DSHOW:
-                    # Tentar configurar propriedades uma por uma
-                    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-                    time.sleep(0.1)
-                    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-                    time.sleep(0.1)
-                    cap.set(cv2.CAP_PROP_FPS, 30)
-                    time.sleep(0.1)
-                    cap.set(cv2.CAP_PROP_BUFFERSIZE, 3)
-                    time.sleep(0.1)
-                    
-                    # Verificar se as configurações foram aplicadas
-                    actual_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-                    actual_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-                    actual_fps = cap.get(cv2.CAP_PROP_FPS)
-                    
-                    logger.info(f"Configurações da câmera: {actual_width}x{actual_height} @ {actual_fps}fps")
-            except Exception as e:
-                logger.warning(f"Erro ao configurar propriedades da câmera: {str(e)}")
+            # Configurar propriedades
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, VIDEO_CONFIG['width'])
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, VIDEO_CONFIG['height'])
+            cap.set(cv2.CAP_PROP_FPS, 30)
+            cap.set(cv2.CAP_PROP_BUFFERSIZE, 3)
             
-            # Tenta ler múltiplos frames para garantir estabilidade
+            # Verificar estabilidade
             frames_read = 0
             required_frames = 3
-            last_frame_time = None
+            frame_times = []
             
             while time.time() - start_time < timeout:
                 ret, frame = cap.read()
                 if ret and frame is not None:
-                    current_time = time.time()
-                    if last_frame_time is not None:
-                        frame_interval = current_time - last_frame_time
-                        logger.debug(f"Intervalo entre frames: {frame_interval:.3f}s")
-                    
-                    last_frame_time = current_time
+                    frame_times.append(time.time())
                     frames_read += 1
                     
                     if frames_read >= required_frames:
-                        logger.info(f"Câmera {camera_id} inicializada com sucesso usando backend {backend_name}")
+                        # Calcular FPS real
+                        if len(frame_times) >= 2:
+                            intervals = [
+                                frame_times[i+1] - frame_times[i]
+                                for i in range(len(frame_times)-1)
+                            ]
+                            avg_interval = sum(intervals) / len(intervals)
+                            fps = 1.0 / avg_interval if avg_interval > 0 else 0
+                            logger.info(f"FPS calculado: {fps:.1f}")
+                        
                         return cap, None
                 else:
                     frames_read = 0
-                    logger.debug(f"Falha ao ler frame da câmera {camera_id}")
+                    frame_times.clear()
                 
                 time.sleep(0.1)
             
-            # Se chegou aqui, houve timeout
-            logger.warning(f"Timeout ao tentar ler frames consecutivos da câmera {camera_id} com backend {backend_name}")
+            # Timeout
             if cap:
                 cap.release()
-            return None, "Timeout ao tentar ler frames consecutivos"
+            return None, "Timeout ao tentar ler frames"
             
         except Exception as e:
-            logger.error(f"Erro ao tentar inicializar câmera {camera_id} com backend {backend_name}: {str(e)}")
+            logger.error(f"Erro ao testar câmera: {str(e)}")
             if cap:
                 cap.release()
             return None, str(e)
 
 class CameraDetectionThread(QThread):
-    """Thread para detectar câmeras sem bloquear a interface."""
-    camera_found = pyqtSignal(int, str)
-    finished = pyqtSignal()
+    """Thread para detectar câmeras disponíveis."""
     
-    def __init__(self):
-        super().__init__()
-        self.backends = []
-        if platform.system() == 'Windows':
-            # No Windows, tenta apenas o backend padrão
-            self.backends = [None]
-        else:
-            # Em outros sistemas, usa apenas o backend padrão
-            self.backends = [None]
+    camera_found = pyqtSignal(CameraInfo)  # Emitido quando uma câmera é encontrada
+    progress = pyqtSignal(int, int)        # Emitido para atualizar progresso
+    finished = pyqtSignal()                # Emitido quando a detecção termina
     
     def run(self):
         """Executa a detecção de câmeras."""
-        for i in range(2):  # Testa apenas os primeiros índices
-            camera_detected = False
+        try:
+            backends = CameraBackend.get_available_backends()
+            total_steps = len(backends) * 2  # 2 câmeras por backend
+            current_step = 0
             
-            for backend in self.backends:
-                try:
+            for i in range(2):
+                for backend in backends:
+                    current_step += 1
+                    self.progress.emit(current_step, total_steps)
+                    
                     cap, error = CameraBackend.try_backend(i, backend)
                     if cap:
-                        # Câmera detectada com sucesso
-                        name = f"Câmera {i}"
-                        if backend == cv2.CAP_DSHOW:
-                            name += " (DirectShow)"
+                        # Coletar informações
+                        info = CameraInfo(i, f"Câmera {i}", backend)
+                        info.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                        info.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                        info.fps = cap.get(cv2.CAP_PROP_FPS)
                         
-                        self.camera_found.emit(i, name)
-                        camera_detected = True
                         cap.release()
-                        break
-                    else:
-                        logger.warning(f"Falha ao testar câmera {i}: {error}")
-                
-                except Exception as e:
-                    logger.error(f"Erro ao testar câmera {i}: {str(e)}")
+                        self.camera_found.emit(info)
+                        break  # Câmera encontrada, tentar próximo ID
             
-            if not camera_detected:
-                logger.warning(f"Não foi possível detectar câmera {i} com nenhum backend")
-        
-        self.finished.emit()
-        logger.info("Detecção de câmeras concluída")
+            self.finished.emit()
+            
+        except Exception as e:
+            logger.error(f"Erro na detecção de câmeras: {str(e)}")
+            self.finished.emit()
 
 class VideoSourceDialog(QDialog):
     """Diálogo para seleção da fonte de vídeo."""
     
     def __init__(self, parent=None):
+        """Inicializa o diálogo."""
         super().__init__(parent)
         self.source_type = None
         self.camera_id = 0
-        self.available_cameras = []
+        self.available_cameras: List[CameraInfo] = []
         self.setup_ui()
         self.detect_cameras()
     
-    def detect_cameras(self):
-        """Inicia a detecção de câmeras em uma thread separada."""
-        self.progress = QProgressDialog("Detectando câmeras...", None, 0, 0, self)
-        self.progress.setWindowModality(Qt.WindowModal)
-        self.progress.setMinimumDuration(0)
-        self.progress.setCancelButton(None)
-        self.progress.setWindowTitle("Aguarde")
-        
-        self.detection_thread = CameraDetectionThread()
-        self.detection_thread.camera_found.connect(self.add_camera)
-        self.detection_thread.finished.connect(self.detection_finished)
-        logger.info("Iniciando detecção de câmeras...")
-        self.detection_thread.start()
-    
-    def add_camera(self, camera_id, name):
-        """Adiciona uma câmera encontrada à lista."""
-        self.available_cameras.append((camera_id, name))
-        self.camera_combo.addItem(name, camera_id)
-        logger.info(f"Câmera adicionada: {name} (ID: {camera_id})")
-    
-    def detection_finished(self):
-        """Chamado quando a detecção de câmeras termina."""
-        self.progress.close()
-        
-        if self.available_cameras:
-            self.status_label.setText(f"Câmeras detectadas: {len(self.available_cameras)}")
-            self.status_label.setStyleSheet("color: green;")
-            self.camera_btn.setEnabled(True)
-            self.camera_btn.setToolTip("")
-            logger.info(f"Total de câmeras detectadas: {len(self.available_cameras)}")
-        else:
-            self.status_label.setText("Nenhuma câmera detectada")
-            self.status_label.setStyleSheet("color: red;")
-            self.camera_btn.setEnabled(False)
-            self.camera_btn.setToolTip("Nenhuma câmera detectada")
-            logger.warning("Nenhuma câmera foi detectada")
-    
     def setup_ui(self):
         """Configura a interface do diálogo."""
-        self.setWindowTitle("Selecionar Fonte de Vídeo")
-        self.setFixedWidth(400)
+        try:
+            self.setWindowTitle("Selecionar Fonte de Vídeo")
+            self.setFixedWidth(500)
+            self.setStyleSheet("""
+                QDialog {
+                    background-color: white;
+                }
+                QPushButton {
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                }
+                QComboBox {
+                    padding: 4px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                }
+            """)
+            
+            layout = QVBoxLayout(self)
+            layout.setSpacing(15)
+            
+            # Título
+            title = QLabel("Escolha a Fonte de Vídeo")
+            title.setFont(QFont("Arial", 14, QFont.Bold))
+            title.setAlignment(Qt.AlignCenter)
+            layout.addWidget(title)
+            
+            # Status
+            self.status_frame = QFrame()
+            self.status_frame.setFrameStyle(QFrame.StyledPanel)
+            status_layout = QVBoxLayout(self.status_frame)
+            
+            self.status_label = QLabel("Detectando câmeras...")
+            self.status_label.setAlignment(Qt.AlignCenter)
+            status_layout.addWidget(self.status_label)
+            
+            self.progress_label = QLabel()
+            self.progress_label.setAlignment(Qt.AlignCenter)
+            self.progress_label.hide()
+            status_layout.addWidget(self.progress_label)
+            
+            layout.addWidget(self.status_frame)
+            
+            # Botões de fonte
+            source_layout = QHBoxLayout()
+            
+            self.camera_btn = QPushButton("Câmera")
+            self.camera_btn.setIcon(QIcon.fromTheme("camera-web"))
+            self.camera_btn.clicked.connect(self.select_camera)
+            self.camera_btn.setEnabled(False)
+            source_layout.addWidget(self.camera_btn)
+            
+            self.video_btn = QPushButton("Arquivo de Vídeo")
+            self.video_btn.setIcon(QIcon.fromTheme("video-x-generic"))
+            self.video_btn.clicked.connect(self.select_video)
+            source_layout.addWidget(self.video_btn)
+            
+            layout.addLayout(source_layout)
+            
+            # Seletor de câmera
+            self.camera_frame = QFrame()
+            self.camera_frame.setFrameStyle(QFrame.StyledPanel)
+            camera_layout = QVBoxLayout(self.camera_frame)
+            
+            self.camera_combo = QComboBox()
+            self.camera_combo.currentIndexChanged.connect(self._update_camera_info)
+            camera_layout.addWidget(self.camera_combo)
+            
+            self.camera_info = QLabel()
+            self.camera_info.setStyleSheet("color: #666;")
+            camera_layout.addWidget(self.camera_info)
+            
+            self.camera_frame.hide()
+            layout.addWidget(self.camera_frame)
+            
+            # Botões de ação
+            buttons = QHBoxLayout()
+            
+            self.cancel_btn = QPushButton("Cancelar")
+            self.cancel_btn.setIcon(QIcon.fromTheme("dialog-cancel"))
+            self.cancel_btn.clicked.connect(self.reject)
+            buttons.addWidget(self.cancel_btn)
+            
+            buttons.addSpacerItem(
+                QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+            )
+            
+            self.ok_btn = QPushButton("Conectar")
+            self.ok_btn.setIcon(QIcon.fromTheme("dialog-ok"))
+            self.ok_btn.clicked.connect(self.accept)
+            self.ok_btn.hide()
+            buttons.addWidget(self.ok_btn)
+            
+            layout.addLayout(buttons)
+            
+        except Exception as e:
+            logger.error(f"Erro ao configurar interface: {str(e)}")
+            self.show_error_ui()
+    
+    def show_error_ui(self):
+        """Exibe interface de erro."""
+        layout = QVBoxLayout(self)
+        error = QLabel("Erro ao carregar interface")
+        error.setStyleSheet("color: red;")
+        layout.addWidget(error)
+    
+    def detect_cameras(self):
+        """Inicia a detecção de câmeras."""
+        try:
+            self.detection_thread = CameraDetectionThread()
+            self.detection_thread.camera_found.connect(self._add_camera)
+            self.detection_thread.progress.connect(self._update_progress)
+            self.detection_thread.finished.connect(self._detection_finished)
+            self.detection_thread.start()
+            
+        except Exception as e:
+            logger.error(f"Erro ao iniciar detecção: {str(e)}")
+            self.status_label.setText("Erro ao detectar câmeras")
+            self.status_label.setStyleSheet("color: red;")
+    
+    def _add_camera(self, camera: CameraInfo):
+        """
+        Adiciona uma câmera à lista.
         
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        Args:
+            camera: Informações da câmera
+        """
+        try:
+            self.available_cameras.append(camera)
+            self.camera_combo.addItem(str(camera), camera)
+            logger.info(f"Câmera adicionada: {camera}")
+            
+        except Exception as e:
+            logger.error(f"Erro ao adicionar câmera: {str(e)}")
+    
+    def _update_progress(self, current: int, total: int):
+        """
+        Atualiza o progresso da detecção.
         
-        # Título
-        title = QLabel("Escolha a fonte de vídeo")
-        title.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title)
+        Args:
+            current: Passo atual
+            total: Total de passos
+        """
+        try:
+            self.progress_label.setText(f"Progresso: {current}/{total}")
+            self.progress_label.show()
+            
+        except Exception as e:
+            logger.error(f"Erro ao atualizar progresso: {str(e)}")
+    
+    def _detection_finished(self):
+        """Finaliza o processo de detecção."""
+        try:
+            self.progress_label.hide()
+            
+            if self.available_cameras:
+                self.status_label.setText(
+                    f"Câmeras detectadas: {len(self.available_cameras)}"
+                )
+                self.status_label.setStyleSheet("color: green;")
+                self.camera_btn.setEnabled(True)
+                logger.info("Detecção concluída com sucesso")
+            else:
+                self.status_label.setText("Nenhuma câmera detectada")
+                self.status_label.setStyleSheet("color: red;")
+                self.camera_btn.setEnabled(False)
+                logger.warning("Nenhuma câmera detectada")
+            
+        except Exception as e:
+            logger.error(f"Erro ao finalizar detecção: {str(e)}")
+    
+    def _update_camera_info(self, index: int):
+        """
+        Atualiza informações da câmera selecionada.
         
-        # Status das câmeras
-        self.status_label = QLabel("Detectando câmeras...")
-        self.status_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.status_label)
-        
-        # Botões de fonte
-        btn_layout = QHBoxLayout()
-        
-        # Botão de câmera
-        self.camera_btn = QPushButton("Câmera do Computador")
-        self.camera_btn.setStyleSheet("padding: 10px;")
-        self.camera_btn.clicked.connect(self.select_camera)
-        self.camera_btn.setEnabled(False)
-        btn_layout.addWidget(self.camera_btn)
-        
-        # Botão de vídeo
-        self.video_btn = QPushButton("Carregar Vídeo")
-        self.video_btn.setStyleSheet("padding: 10px;")
-        self.video_btn.clicked.connect(self.select_video)
-        btn_layout.addWidget(self.video_btn)
-        
-        layout.addLayout(btn_layout)
-        
-        # Seletor de câmera (inicialmente oculto)
-        self.camera_layout = QHBoxLayout()
-        self.camera_label = QLabel("Selecione a câmera:")
-        self.camera_combo = QComboBox()
-        
-        self.camera_layout.addWidget(self.camera_label)
-        self.camera_layout.addWidget(self.camera_combo)
-        self.camera_widget = QLabel()
-        self.camera_widget.setLayout(self.camera_layout)
-        self.camera_widget.hide()
-        layout.addWidget(self.camera_widget)
-        
-        # Botões de confirmação
-        buttons_layout = QHBoxLayout()
-        
-        self.cancel_btn = QPushButton("Cancelar")
-        self.cancel_btn.clicked.connect(self.reject)
-        buttons_layout.addWidget(self.cancel_btn)
-        
-        self.ok_btn = QPushButton("OK")
-        self.ok_btn.clicked.connect(self.accept)
-        self.ok_btn.hide()
-        buttons_layout.addWidget(self.ok_btn)
-        
-        layout.addLayout(buttons_layout)
+        Args:
+            index: Índice da câmera
+        """
+        try:
+            if index >= 0:
+                camera = self.camera_combo.itemData(index)
+                self.camera_info.setText(
+                    f"Resolução: {camera.width}x{camera.height}\n"
+                    f"FPS: {camera.fps:.1f}\n"
+                    f"Backend: {camera.backend_name}"
+                )
+            
+        except Exception as e:
+            logger.error(f"Erro ao atualizar info: {str(e)}")
     
     def select_camera(self):
         """Seleciona câmera como fonte."""
-        self.source_type = "camera"
-        self.camera_widget.show()
-        self.ok_btn.show()
-        self.camera_btn.setEnabled(False)
-        self.video_btn.setEnabled(True)
-        logger.info("Modo câmera selecionado")
+        try:
+            self.source_type = "camera"
+            self.camera_frame.show()
+            self.ok_btn.show()
+            self.camera_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #4CAF50;
+                    color: white;
+                }
+            """)
+            self.video_btn.setStyleSheet("")
+            logger.info("Modo câmera selecionado")
+            
+        except Exception as e:
+            logger.error(f"Erro ao selecionar câmera: {str(e)}")
     
     def select_video(self):
         """Seleciona vídeo como fonte."""
-        self.source_type = "video"
-        self.camera_widget.hide()
-        logger.info("Modo vídeo selecionado")
-        self.accept()
+        try:
+            self.source_type = "video"
+            self.camera_frame.hide()
+            self.video_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #4CAF50;
+                    color: white;
+                }
+            """)
+            self.camera_btn.setStyleSheet("")
+            logger.info("Modo vídeo selecionado")
+            self.accept()
+            
+        except Exception as e:
+            logger.error(f"Erro ao selecionar vídeo: {str(e)}")
     
-    def get_camera_id(self):
-        """Retorna o ID da câmera selecionada."""
-        camera_id = self.camera_combo.currentData()
-        logger.info(f"Câmera selecionada: ID {camera_id}")
-        return camera_id
+    def get_camera_id(self) -> Optional[int]:
+        """
+        Retorna o ID da câmera selecionada.
+        
+        Returns:
+            ID da câmera ou None se nenhuma selecionada
+        """
+        try:
+            camera = self.camera_combo.currentData()
+            if camera:
+                logger.info(f"Câmera retornada: {camera}")
+                return camera.id
+            return None
+            
+        except Exception as e:
+            logger.error(f"Erro ao obter câmera: {str(e)}")
+            return None

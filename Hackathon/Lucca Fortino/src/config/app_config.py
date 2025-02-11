@@ -59,7 +59,8 @@ ALERT_CONFIG = {
     'notification_email': os.getenv('SMTP_EMAIL', 'fiap.iadev.2023.team18@gmail.com'),
     'enable_email_alerts': True,
     'alert_subject': 'VisionGuard - Alerta de Detecção',
-    'alert_template': 'Objeto cortante detectado em {timestamp}'
+    'alert_template': 'Objeto cortante detectado em {timestamp}',
+    'email_buffer_interval': 20  # segundos entre envios de email em lote
 }
 
 # Configurações de interface
@@ -108,6 +109,9 @@ def validate_config() -> bool:
             
         if ALERT_CONFIG['min_time_between_alerts'] < 0:
             raise ValueError("min_time_between_alerts deve ser não-negativo")
+            
+        if ALERT_CONFIG['email_buffer_interval'] < 1:
+            raise ValueError("email_buffer_interval deve ser pelo menos 1 segundo")
             
         # Validar email
         if '@' not in ALERT_CONFIG['notification_email']:

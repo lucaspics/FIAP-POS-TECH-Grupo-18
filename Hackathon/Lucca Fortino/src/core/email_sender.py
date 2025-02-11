@@ -10,16 +10,17 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Tuple
 import cv2
 import asyncio
+from PyQt5.QtCore import QObject, QTimer, QMutex
 from config.logging_config import get_logger
 from config.app_config import ALERT_CONFIG
 
-class EmailSender:
+class EmailSender(QObject):
     """Gerenciador de envio de emails assíncrono."""
     
-    def __init__(self, 
+    def __init__(self,
                  smtp_server: str = "smtp.gmail.com",
                  smtp_port: int = 587,
                  sender_email: Optional[str] = None,
@@ -33,6 +34,7 @@ class EmailSender:
             sender_email: Email do remetente (opcional)
             sender_password: Senha do app do remetente (opcional)
         """
+        super().__init__()
         self.logger = get_logger('email_sender')
         self.smtp_server = smtp_server
         self.smtp_port = smtp_port
@@ -47,6 +49,14 @@ class EmailSender:
             self.logger.error(f"Email do remetente inválido: {self.sender_email}")
             self.sender_email = None
             
+        # Buffer de emails
+        self._email_buffer = []
+        self._buffer_mutex = QMutex()
+        self._last_send_time = datetime.now()
+        
+        # Iniciar timer de buffer
+        self._start_buffer_timer()
+            
     def _validate_email(self, email: str) -> bool:
         """
         Valida um endereço de email.
@@ -60,13 +70,70 @@ class EmailSender:
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return bool(re.match(pattern, email))
 
+    def _start_buffer_timer(self):
+        """Inicia o timer para processar o buffer de emails."""
+        self.buffer_timer = QTimer(self)
+        self.buffer_timer.timeout.connect(self._process_buffer)
+        buffer_interval = ALERT_CONFIG.get('email_buffer_interval', 30) * 1000  # converter para ms
+        self.buffer_timer.start(buffer_interval)
+        
+    def _process_buffer(self):
+        """Processa e envia os emails no buffer."""
+        self._buffer_mutex.lock()
+        try:
+            if not self._email_buffer:
+                return
+                
+            # Agrupar detecções por destinatário
+            emails_by_recipient = {}
+            for email in self._email_buffer:
+                recipient = email['recipient']
+                if recipient not in emails_by_recipient:
+                    emails_by_recipient[recipient] = []
+                emails_by_recipient[recipient].append(email)
+            
+            # Enviar email agrupado para cada destinatário
+            for recipient, emails in emails_by_recipient.items():
+                # Combinar todas as detecções e imagens
+                all_detections = []
+                all_frames = []
+                all_times = []
+                
+                for email in emails:
+                    all_detections.extend(email['detections'])
+                    if email['frame'] is not None:
+                        all_frames.append(email['frame'])
+                        all_times.append(email['video_time'])
+                
+                # Criar e enviar mensagem combinada
+                msg = self._create_message(
+                    recipient,
+                    all_detections,
+                    all_frames,
+                    all_times
+                )
+                
+                success = self._send_message(msg)
+                if success:
+                    self.logger.info(f"Email em lote enviado para {recipient} com {len(all_detections)} detecções e {len(all_frames)} imagens")
+                else:
+                    self.logger.error(f"Falha ao enviar email em lote para {recipient}")
+            
+            # Limpar buffer após processamento
+            self._email_buffer.clear()
+            
+        except Exception as e:
+            self.logger.error(f"Erro ao processar buffer de emails: {str(e)}")
+        finally:
+            self._buffer_mutex.unlock()
+
     async def send_alert(self, 
                         recipient_email: str,
                         detections: List[Dict],
                         frame: Optional[cv2.Mat] = None,
                         video_time: int = 0) -> bool:
         """
-        Envia um email de alerta de forma assíncrona.
+        Adiciona um alerta ao buffer de emails.
         
         Args:
             recipient_email: Email do destinatário
@@ -75,7 +142,7 @@ class EmailSender:
             video_time: Tempo do vídeo em ms
             
         Returns:
-            bool indicando sucesso do envio
+            bool indicando sucesso da adição ao buffer
         """
         if not (self.sender_email and self.sender_password):
             self.logger.error("Credenciais de email não configuradas")
@@ -86,34 +153,37 @@ class EmailSender:
             return False
             
         try:
-            # Criar mensagem de forma assíncrona
-            msg = await asyncio.to_thread(self._create_message,
-                recipient_email,
-                detections,
-                frame,
-                video_time
-            )
-            
-            # Enviar email de forma assíncrona
-            return await asyncio.to_thread(self._send_message, msg)
+            # Adicionar ao buffer
+            self._buffer_mutex.lock()
+            try:
+                self._email_buffer.append({
+                    'recipient': recipient_email,
+                    'detections': detections,
+                    'frame': frame.copy() if frame is not None else None,  # Fazer cópia do frame
+                    'video_time': video_time
+                })
+                self.logger.info(f"Alerta adicionado ao buffer para {recipient_email}")
+                return True
+            finally:
+                self._buffer_mutex.unlock()
             
         except Exception as e:
-            self.logger.error(f"Erro ao enviar email: {str(e)}")
+            self.logger.error(f"Erro ao adicionar alerta ao buffer: {str(e)}")
             return False
             
     def _create_message(self,
                        recipient_email: str,
                        detections: List[Dict],
-                       frame: Optional[cv2.Mat],
-                       video_time: int) -> MIMEMultipart:
+                       frames: List[cv2.Mat],
+                       video_times: List[int]) -> MIMEMultipart:
         """
         Cria a mensagem de email.
         
         Args:
             recipient_email: Email do destinatário
             detections: Lista de detecções
-            frame: Frame da detecção
-            video_time: Tempo do vídeo
+            frames: Lista de frames das detecções
+            video_times: Lista de tempos dos vídeos
             
         Returns:
             Mensagem MIME montada
@@ -125,22 +195,22 @@ class EmailSender:
             msg['To'] = recipient_email
             
             # Corpo do email
-            body = self._create_alert_body(detections, video_time)
+            body = self._create_alert_body(detections, video_times)
             msg.attach(MIMEText(body, 'html'))
             
-            # Anexar imagem se disponível
-            if frame is not None:
+            # Anexar imagens
+            for i, frame in enumerate(frames):
                 try:
                     # Processar imagem de forma segura
                     success, img_data = cv2.imencode('.jpg', frame)
                     if success:
                         image = MIMEImage(img_data.tobytes())
-                        image.add_header('Content-ID', '<detection_image>')
+                        image.add_header('Content-ID', f'<detection_image_{i}>')
                         msg.attach(image)
                     else:
-                        self.logger.warning("Falha ao codificar imagem para email")
+                        self.logger.warning(f"Falha ao codificar imagem {i} para email")
                 except Exception as e:
-                    self.logger.error(f"Erro ao processar imagem: {str(e)}")
+                    self.logger.error(f"Erro ao processar imagem {i}: {str(e)}")
             
             return msg
             
@@ -177,13 +247,13 @@ class EmailSender:
             self.logger.error(f"Erro ao enviar mensagem: {str(e)}")
             return False
 
-    def _create_alert_body(self, detections: List[Dict], video_time: int) -> str:
+    def _create_alert_body(self, detections: List[Dict], video_times: List[int]) -> str:
         """
         Cria o corpo HTML do email de alerta.
         
         Args:
             detections: Lista de detecções
-            video_time: Tempo do vídeo em ms
+            video_times: Lista de tempos dos vídeos
             
         Returns:
             String HTML do corpo do email
@@ -200,7 +270,9 @@ class EmailSender:
                 
                 <div style="margin: 20px 0; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
                     <p><strong>Timestamp:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-                    <p><strong>Tempo do vídeo:</strong> {video_time/1000:.1f}s</p>
+                    <p><strong>Detecções agrupadas:</strong> {len(detections)}</p>
+                    <p><strong>Imagens:</strong> {len(video_times)}</p>
+                    <p><strong>Tempos de vídeo:</strong> {', '.join(f'{t/1000:.1f}s' for t in video_times)}</p>
                 </div>
                 
                 <h3>Detecções:</h3>
@@ -231,12 +303,24 @@ class EmailSender:
                     </li>
                 """
                 
-            # Rodapé
+            # Imagens
             html += """
                 </ul>
                 
                 <div style="margin-top: 20px;">
-                    <p>Imagem da detecção em anexo (se disponível).</p>
+                    <h3>Imagens das Detecções:</h3>
+            """
+            
+            for i in range(len(video_times)):
+                html += f"""
+                    <div style="margin: 20px 0;">
+                        <p><strong>Detecção {i+1}</strong> (Tempo: {video_times[i]/1000:.1f}s)</p>
+                        <img src="cid:detection_image_{i}" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                """
+            
+            # Rodapé
+            html += """
                 </div>
                 
                 <hr style="margin: 20px 0;">

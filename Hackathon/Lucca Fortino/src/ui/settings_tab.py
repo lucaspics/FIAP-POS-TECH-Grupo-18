@@ -118,6 +118,14 @@ class SettingsTab(QWidget):
             self.alert_interval.setValue(ALERT_CONFIG['min_time_between_alerts'])
             layout.addRow("Intervalo entre alertas:", self.alert_interval)
             
+            # Buffer de emails
+            self.email_buffer_interval = QSpinBox()
+            self.email_buffer_interval.setRange(10, 300)
+            self.email_buffer_interval.setSingleStep(1)
+            self.email_buffer_interval.setSuffix(" s")
+            self.email_buffer_interval.setValue(ALERT_CONFIG.get('email_buffer_interval', 5))
+            layout.addRow("Intervalo do buffer de emails:", self.email_buffer_interval)
+            
             # Salvar frames
             self.save_frames = QCheckBox("Salvar frames dos alertas")
             self.save_frames.setChecked(ALERT_CONFIG['save_frames'])
@@ -332,7 +340,8 @@ class SettingsTab(QWidget):
                     'notification_email': email,
                     'enable_email_alerts': self.enable_email.isChecked(),
                     'min_time_between_alerts': self.alert_interval.value(),
-                    'save_frames': self.save_frames.isChecked()
+                    'save_frames': self.save_frames.isChecked(),
+                    'email_buffer_interval': self.email_buffer_interval.value()
                 },
                 'model': {
                     'alert_threshold': self.alert_threshold.value(),

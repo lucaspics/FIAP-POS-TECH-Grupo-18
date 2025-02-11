@@ -140,23 +140,13 @@ class AlertWidget(QWidget):
                 info_layout.addWidget(det_label)
             
             frame_layout.addLayout(info_layout)
-            
-            # Botão de visualizar
-            view_btn = QPushButton("👁 Ver")
-            view_btn.setToolTip("Visualizar alerta")
-            view_btn.clicked.connect(
-                lambda: self.alert_clicked.emit(self.alert_id)
-            )
-            view_btn.setMinimumWidth(60)
-            
-            # Container para o botão
-            button_layout = QVBoxLayout()
-            button_layout.addWidget(view_btn)
-            button_layout.setSpacing(5)
-            button_layout.setContentsMargins(0, 0, 0, 0)
-            
-            frame_layout.addLayout(button_layout)
             layout.addWidget(frame)
+            
+            # Fazer o widget inteiro clicável
+            self.setCursor(Qt.PointingHandCursor)
+            
+            # Conectar o clique do widget ao sinal
+            frame.mousePressEvent = lambda e: self.alert_clicked.emit(self.alert_id)
             
             # Estilo
             self.setStyleSheet("""
@@ -165,16 +155,11 @@ class AlertWidget(QWidget):
                     border-radius: 5px;
                     padding: 8px;
                     border: 1px solid #ddd;
+                    transition: background-color 0.2s;
                 }
-                QPushButton {
-                    padding: 5px;
-                    border-radius: 3px;
-                    background-color: #ffffff;
-                    border: 1px solid #ddd;
-                    font-weight: bold;
-                }
-                QPushButton:hover {
+                QFrame:hover {
                     background-color: #e0e0e0;
+                    border-color: #bbb;
                 }
                 QLabel {
                     color: #333;

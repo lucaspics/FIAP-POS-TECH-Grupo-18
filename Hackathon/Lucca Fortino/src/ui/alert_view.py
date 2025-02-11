@@ -28,7 +28,6 @@ class AlertView(QWidget):
     
     # Sinais
     alert_selected = pyqtSignal(str)  # ID do alerta selecionado
-    alert_deleted = pyqtSignal(str)   # ID do alerta deletado
     jump_to_time = pyqtSignal(int)    # Tempo em ms para pular
     
     def __init__(self, parent: Optional[QWidget] = None):
@@ -81,11 +80,6 @@ class AlertView(QWidget):
             self.jump_button.setToolTip("Pular para este momento")
             self.jump_button.clicked.connect(self._handle_jump_click)
             action_layout.addWidget(self.jump_button)
-            
-            self.delete_button = QPushButton(QIcon.fromTheme("edit-delete"), "")
-            self.delete_button.setToolTip("Deletar alerta")
-            self.delete_button.clicked.connect(self._handle_delete_click)
-            action_layout.addWidget(self.delete_button)
             
             header_layout.addWidget(action_buttons)
             details_layout.addWidget(header)
@@ -156,9 +150,8 @@ class AlertView(QWidget):
             item, widget = create_alert_list_item(alert_data)
             
             if isinstance(widget, AlertWidget):  # Verifica se não é um widget de erro
-                # Conectar sinais do widget
+                # Conectar sinal do widget
                 widget.alert_clicked.connect(self.alert_selected.emit)
-                widget.delete_clicked.connect(self.alert_deleted.emit)
                 
                 # Adicionar à lista
                 self.alerts_list.addItem(item)
@@ -238,9 +231,8 @@ class AlertView(QWidget):
             self.details_layout.addWidget(details)
             self.details_layout.addStretch()
             
-            # Habilitar botões
+            # Habilitar botão
             self.jump_button.setEnabled(True)
-            self.delete_button.setEnabled(True)
             
         except Exception as e:
             logger.error(f"Erro ao mostrar detalhes: {str(e)}")
@@ -258,9 +250,8 @@ class AlertView(QWidget):
             # Resetar título
             self.details_title.setText("Detalhes do Alerta")
             
-            # Desabilitar botões
+            # Desabilitar botão
             self.jump_button.setEnabled(False)
-            self.delete_button.setEnabled(False)
             
             self.current_alert_id = None
             
@@ -304,20 +295,3 @@ class AlertView(QWidget):
         except Exception as e:
             logger.error(f"Erro ao processar pulo: {str(e)}")
     
-    def _handle_delete_click(self):
-        """Manipula clique no botão de deletar."""
-        try:
-            if self.current_alert_id:
-                self.alert_deleted.emit(self.current_alert_id)
-                
-                # Remover da lista
-                for i in range(self.alerts_list.count()):
-                    item = self.alerts_list.item(i)
-                    data = item.data(Qt.UserRole)
-                    if data.get('alert_id') == self.current_alert_id:
-                        self.alerts_list.takeItem(i)
-                        break
-                
-                self.clear_details()
-        except Exception as e:
-            logger.error(f"Erro ao deletar alerta: {str(e)}")

@@ -125,8 +125,6 @@ class SecurityCameraApp(QMainWindow):
             self.video_tab.connect_clicked.connect(self.connect_camera)
             self.video_tab.disconnect_clicked.connect(self.disconnect_camera)
             self.video_tab.play_pause_clicked.connect(self.toggle_play_pause)
-            self.video_tab.rewind_clicked.connect(self.rewind_video)
-            self.video_tab.forward_clicked.connect(self.forward_video)
             
             # Conexões do AnalysisManager
             self.analysis_manager.analysis_complete.connect(self.handle_analysis_result)
@@ -335,18 +333,6 @@ class SecurityCameraApp(QMainWindow):
                 )
         except Exception as e:
             logger.error(f"Erro ao atualizar status: {str(e)}")
-    
-    def rewind_video(self):
-        """Retrocede o vídeo."""
-        if not self.camera_manager.is_camera:
-            current_time = self.camera_manager.get_current_time()
-            self.jump_to_time(max(0, current_time - 5000))  # -5 segundos
-    
-    def forward_video(self):
-        """Avança o vídeo."""
-        if not self.camera_manager.is_camera:
-            current_time = self.camera_manager.get_current_time()
-            self.jump_to_time(current_time + 5000)  # +5 segundos
     
     def jump_to_time(self, time_ms):
         """Salta para um momento específico do vídeo."""

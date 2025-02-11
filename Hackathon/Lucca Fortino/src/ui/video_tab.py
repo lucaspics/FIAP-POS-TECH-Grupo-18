@@ -48,8 +48,6 @@ class VideoTab(QWidget):
     connect_clicked = pyqtSignal()
     disconnect_clicked = pyqtSignal()
     play_pause_clicked = pyqtSignal()
-    rewind_clicked = pyqtSignal()
-    forward_clicked = pyqtSignal()
     
     def __init__(self, parent=None):
         """Inicializa a aba de vídeo."""
@@ -184,21 +182,11 @@ class VideoTab(QWidget):
                 QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
             )
             
-            # Controles de reprodução
-            self.rewind_button = QPushButton("⏪")
-            self.rewind_button.setFont(QFont("Arial", 14))
-            self.rewind_button.clicked.connect(self.rewind_clicked.emit)
-            controls_layout.addWidget(self.rewind_button)
-            
+            # Botão play/pause centralizado
             self.play_pause_button = QPushButton("⏵")
             self.play_pause_button.setFont(QFont("Arial", 14))
             self.play_pause_button.clicked.connect(self._handle_play_pause)
             controls_layout.addWidget(self.play_pause_button)
-            
-            self.forward_button = QPushButton("⏩")
-            self.forward_button.setFont(QFont("Arial", 14))
-            self.forward_button.clicked.connect(self.forward_clicked.emit)
-            controls_layout.addWidget(self.forward_button)
             
             # Espaçador
             controls_layout.addSpacerItem(
@@ -299,8 +287,6 @@ class VideoTab(QWidget):
         """
         try:
             self.play_pause_button.setEnabled(enabled)
-            self.rewind_button.setEnabled(enabled)
-            self.forward_button.setEnabled(enabled)
             self.connect_button.setEnabled(not enabled)
         except Exception as e:
             logger.error(f"Erro ao habilitar controles: {str(e)}")

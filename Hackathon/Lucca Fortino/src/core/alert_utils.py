@@ -141,9 +141,6 @@ class AlertWidget(QWidget):
             
             frame_layout.addLayout(info_layout)
             
-            # Botões
-            button_layout = QVBoxLayout()
-            
             # Botão de visualizar
             view_btn = QPushButton("👁 Ver")
             view_btn.setToolTip("Visualizar alerta")
@@ -151,18 +148,10 @@ class AlertWidget(QWidget):
                 lambda: self.alert_clicked.emit(self.alert_id)
             )
             view_btn.setMinimumWidth(60)
+            
+            # Container para o botão
+            button_layout = QVBoxLayout()
             button_layout.addWidget(view_btn)
-            
-            # Botão de deletar
-            delete_btn = QPushButton("🗑 Del")
-            delete_btn.setToolTip("Deletar alerta")
-            delete_btn.clicked.connect(
-                lambda: self.delete_clicked.emit(self.alert_id)
-            )
-            delete_btn.setMinimumWidth(60)
-            button_layout.addWidget(delete_btn)
-            
-            # Ajustar layout dos botões
             button_layout.setSpacing(5)
             button_layout.setContentsMargins(0, 0, 0, 0)
             

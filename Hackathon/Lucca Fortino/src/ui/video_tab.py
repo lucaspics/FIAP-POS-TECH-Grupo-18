@@ -152,21 +152,35 @@ class VideoTab(QWidget):
     def setup_controls(self, layout):
         """Configura os controles de reprodução."""
         try:
+            # Container principal dos controles
             controls = QWidget()
-            controls_layout = QHBoxLayout(controls)
+            controls_layout = QVBoxLayout(controls)
             controls_layout.setContentsMargins(0, 0, 0, 0)
+            controls_layout.setSpacing(10)
             
-            # Botão de conexão
-            self.connect_button = QPushButton("Conectar")
+            # Container do botão de monitoramento
+            monitor_container = QWidget()
+            monitor_layout = QHBoxLayout(monitor_container)
+            monitor_layout.setContentsMargins(0, 0, 0, 0)
+            
+            # Container do botão de play/pause
+            playback_container = QWidget()
+            playback_layout = QHBoxLayout(playback_container)
+            playback_layout.setContentsMargins(0, 0, 0, 0)
+            
+            # Botão de monitoramento
+            self.connect_button = QPushButton("Iniciar Monitoramento")
             self.connect_button.setIcon(QIcon.fromTheme("network-wired"))
             self.connect_button.clicked.connect(self.connect_clicked.emit)
             self.connect_button.setStyleSheet("""
                 QPushButton {
                     background-color: #4CAF50;
                     color: white;
-                    padding: 8px 16px;
+                    padding: 12px 24px;
                     border-radius: 4px;
                     font-weight: bold;
+                    font-size: 14px;
+                    min-width: 200px;
                 }
                 QPushButton:hover {
                     background-color: #45a049;
@@ -175,23 +189,25 @@ class VideoTab(QWidget):
                     background-color: #cccccc;
                 }
             """)
-            controls_layout.addWidget(self.connect_button)
+            # Adiciona botão de monitoramento ao seu container
+            monitor_layout.addWidget(self.connect_button)
+            controls_layout.addWidget(monitor_container)
             
-            # Espaçador
-            controls_layout.addSpacerItem(
-                QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-            )
-            
-            # Botão play/pause centralizado
+            # Botão play/pause centralizado com espaçadores
             self.play_pause_button = QPushButton("⏵")
             self.play_pause_button.setFont(QFont("Arial", 14))
             self.play_pause_button.clicked.connect(self._handle_play_pause)
-            controls_layout.addWidget(self.play_pause_button)
+            self.play_pause_button.setStyleSheet("""
+                QPushButton {
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                }
+            """)
             
-            # Espaçador
-            controls_layout.addSpacerItem(
-                QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-            )
+            playback_layout.addStretch(1)
+            playback_layout.addWidget(self.play_pause_button)
+            playback_layout.addStretch(1)
+            controls_layout.addWidget(playback_container)
             
             layout.addWidget(controls)
             

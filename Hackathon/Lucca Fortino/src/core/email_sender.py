@@ -1,5 +1,5 @@
 """
-Gerenciador de envio de emails assíncrono.
+Gerenciador de envio de emails assíncrono com worker dedicado.
 """
 
 import os
@@ -13,12 +13,80 @@ from pathlib import Path
 from typing import Optional, List, Dict, Tuple
 import cv2
 import asyncio
+import threading
 from PyQt5.QtCore import QObject, QTimer, QMutex
 from config.logging_config import get_logger
 from config.app_config import ALERT_CONFIG
 
+class EmailWorker:
+    """Worker dedicado para envio de emails em background."""
+    
+    def __init__(self, smtp_config: Dict):
+        """
+        Inicializa o worker.
+        
+        Args:
+            smtp_config: Configurações SMTP
+        """
+        self.logger = get_logger('email_worker')
+        self.smtp_config = smtp_config
+        self.queue = asyncio.Queue()
+        self.running = True
+        self._worker_thread = None
+        
+    def start(self):
+        """Inicia o worker em uma thread separada."""
+        self._worker_thread = threading.Thread(target=self._run_worker, daemon=True)
+        self._worker_thread.start()
+        
+    def stop(self):
+        """Para o worker."""
+        self.running = False
+        if self._worker_thread:
+            self._worker_thread.join()
+            
+    def _run_worker(self):
+        """Loop principal do worker."""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        while self.running:
+            try:
+                # Processar emails da fila
+                while not self.queue.empty():
+                    email_data = loop.run_until_complete(self.queue.get())
+                    self._send_email(email_data)
+                    self.queue.task_done()
+                    
+                # Pequena pausa para não sobrecarregar a CPU
+                loop.run_until_complete(asyncio.sleep(0.1))
+                    
+            except Exception as e:
+                self.logger.error(f"Erro no worker de email: {str(e)}")
+                
+        loop.close()
+        
+    def _send_email(self, email_data: Dict):
+        """
+        Envia um email.
+        
+        Args:
+            email_data: Dados do email a enviar
+        """
+        try:
+            with smtplib.SMTP(self.smtp_config['server'],
+                            self.smtp_config['port'],
+                            timeout=10) as server:
+                server.starttls()
+                server.login(self.smtp_config['email'],
+                           self.smtp_config['password'])
+                server.send_message(email_data['message'])
+                
+        except Exception as e:
+            self.logger.error(f"Erro ao enviar email: {str(e)}")
+
 class EmailSender(QObject):
-    """Gerenciador de envio de emails assíncrono."""
+    """Gerenciador de envio de emails assíncrono com worker dedicado."""
     
     def __init__(self,
                  smtp_server: str = "smtp.gmail.com",
@@ -49,13 +117,14 @@ class EmailSender(QObject):
             self.logger.error(f"Email do remetente inválido: {self.sender_email}")
             self.sender_email = None
             
-        # Buffer de emails
-        self._email_buffer = []
-        self._buffer_mutex = QMutex()
-        self._last_send_time = datetime.now()
-        
-        # Iniciar timer de buffer
-        self._start_buffer_timer()
+        # Inicializar worker
+        self.worker = EmailWorker({
+            'server': self.smtp_server,
+            'port': self.smtp_port,
+            'email': self.sender_email,
+            'password': self.sender_password
+        })
+        self.worker.start()
             
     def _validate_email(self, email: str) -> bool:
         """
@@ -70,70 +139,13 @@ class EmailSender(QObject):
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return bool(re.match(pattern, email))
 
-    def _start_buffer_timer(self):
-        """Inicia o timer para processar o buffer de emails."""
-        self.buffer_timer = QTimer(self)
-        self.buffer_timer.timeout.connect(self._process_buffer)
-        buffer_interval = ALERT_CONFIG.get('email_buffer_interval', 30) * 1000  # converter para ms
-        self.buffer_timer.start(buffer_interval)
-        
-    def _process_buffer(self):
-        """Processa e envia os emails no buffer."""
-        self._buffer_mutex.lock()
-        try:
-            if not self._email_buffer:
-                return
-                
-            # Agrupar detecções por destinatário
-            emails_by_recipient = {}
-            for email in self._email_buffer:
-                recipient = email['recipient']
-                if recipient not in emails_by_recipient:
-                    emails_by_recipient[recipient] = []
-                emails_by_recipient[recipient].append(email)
-            
-            # Enviar email agrupado para cada destinatário
-            for recipient, emails in emails_by_recipient.items():
-                # Combinar todas as detecções e imagens
-                all_detections = []
-                all_frames = []
-                all_times = []
-                
-                for email in emails:
-                    all_detections.extend(email['detections'])
-                    if email['frame'] is not None:
-                        all_frames.append(email['frame'])
-                        all_times.append(email['video_time'])
-                
-                # Criar e enviar mensagem combinada
-                msg = self._create_message(
-                    recipient,
-                    all_detections,
-                    all_frames,
-                    all_times
-                )
-                
-                success = self._send_message(msg)
-                if success:
-                    self.logger.info(f"Email em lote enviado para {recipient} com {len(all_detections)} detecções e {len(all_frames)} imagens")
-                else:
-                    self.logger.error(f"Falha ao enviar email em lote para {recipient}")
-            
-            # Limpar buffer após processamento
-            self._email_buffer.clear()
-            
-        except Exception as e:
-            self.logger.error(f"Erro ao processar buffer de emails: {str(e)}")
-        finally:
-            self._buffer_mutex.unlock()
-
-    async def send_alert(self, 
+    async def send_alert(self,
                         recipient_email: str,
                         detections: List[Dict],
                         frame: Optional[cv2.Mat] = None,
                         video_time: int = 0) -> bool:
         """
-        Adiciona um alerta ao buffer de emails.
+        Envia um alerta por email de forma assíncrona.
         
         Args:
             recipient_email: Email do destinatário
@@ -142,7 +154,7 @@ class EmailSender(QObject):
             video_time: Tempo do vídeo em ms
             
         Returns:
-            bool indicando sucesso da adição ao buffer
+            bool indicando sucesso do envio
         """
         if not (self.sender_email and self.sender_password):
             self.logger.error("Credenciais de email não configuradas")
@@ -153,22 +165,24 @@ class EmailSender(QObject):
             return False
             
         try:
-            # Adicionar ao buffer
-            self._buffer_mutex.lock()
-            try:
-                self._email_buffer.append({
-                    'recipient': recipient_email,
-                    'detections': detections,
-                    'frame': frame.copy() if frame is not None else None,  # Fazer cópia do frame
-                    'video_time': video_time
-                })
-                self.logger.info(f"Alerta adicionado ao buffer para {recipient_email}")
-                return True
-            finally:
-                self._buffer_mutex.unlock()
+            # Criar mensagem
+            msg = self._create_message(
+                recipient_email,
+                detections,
+                [frame] if frame is not None else [],
+                [video_time] if frame is not None else []
+            )
+            
+            # Adicionar à fila do worker
+            await self.worker.queue.put({
+                'message': msg
+            })
+            
+            self.logger.info(f"Email adicionado à fila para {recipient_email}")
+            return True
             
         except Exception as e:
-            self.logger.error(f"Erro ao adicionar alerta ao buffer: {str(e)}")
+            self.logger.error(f"Erro ao enviar alerta: {str(e)}")
             return False
             
     def _create_message(self,
@@ -217,35 +231,6 @@ class EmailSender(QObject):
         except Exception as e:
             self.logger.error(f"Erro ao criar mensagem: {str(e)}")
             raise
-
-    def _send_message(self, msg: MIMEMultipart) -> bool:
-        """
-        Envia uma mensagem de email.
-        
-        Args:
-            msg: Mensagem MIME para enviar
-            
-        Returns:
-            bool indicando sucesso do envio
-        """
-        try:
-            with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
-                server.starttls()
-                server.login(self.sender_email, self.sender_password)
-                server.send_message(msg)
-                
-            self.logger.info(f"Alerta enviado para {msg['To']}")
-            return True
-            
-        except smtplib.SMTPAuthenticationError:
-            self.logger.error("Falha na autenticação SMTP")
-            return False
-        except smtplib.SMTPException as e:
-            self.logger.error(f"Erro SMTP: {str(e)}")
-            return False
-        except Exception as e:
-            self.logger.error(f"Erro ao enviar mensagem: {str(e)}")
-            return False
 
     def _create_alert_body(self, detections: List[Dict], video_times: List[int]) -> str:
         """
@@ -352,16 +337,22 @@ class EmailSender(QObject):
             }
             
         try:
-            # Testar conexão de forma assíncrona
-            result = await asyncio.to_thread(self._test_smtp_connection)
+            # Criar uma mensagem de teste
+            msg = MIMEText("Teste de conexão")
+            msg['Subject'] = "Teste VisionGuard"
+            msg['From'] = self.sender_email
+            msg['To'] = self.sender_email
+            
+            # Tentar adicionar à fila do worker
+            await self.worker.queue.put({
+                'message': msg
+            })
+            
             return {
                 'success': True,
                 'smtp_server': self.smtp_server,
                 'smtp_port': self.smtp_port,
                 'sender_email': self.sender_email
-            } if result else {
-                'success': False,
-                'error': 'Falha na conexão SMTP'
             }
             
         except Exception as e:
@@ -369,19 +360,3 @@ class EmailSender(QObject):
                 'success': False,
                 'error': str(e)
             }
-
-    def _test_smtp_connection(self) -> bool:
-        """
-        Testa a conexão SMTP.
-        
-        Returns:
-            bool indicando sucesso da conexão
-        """
-        try:
-            with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
-                server.starttls()
-                server.login(self.sender_email, self.sender_password)
-            return True
-        except Exception as e:
-            self.logger.error(f"Erro ao testar conexão SMTP: {str(e)}")
-            return False

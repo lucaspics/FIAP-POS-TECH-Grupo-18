@@ -34,7 +34,7 @@ LOG_DIRS = {
 
 # Configurações do modelo
 MODEL_CONFIG = {
-    'path': DIRS['models'] / 'best.pt',
+    'path': DIRS['models'] / 'weapon-detection' / 'weights' / 'best.pt',
     'confidence_threshold': 0.25,
     'alert_threshold': 0.5,
     'target_height': 320

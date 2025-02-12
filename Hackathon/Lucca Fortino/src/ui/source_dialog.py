@@ -26,6 +26,30 @@ from config.app_config import VIDEO_CONFIG
 
 logger = get_logger('source_dialog')
 
+class CameraBackend:
+    """Gerenciador de backends de câmera."""
+    
+    @staticmethod
+    def try_backend(camera_id: int,
+                     backend: Optional[int] = None) -> Tuple[Optional[cv2.VideoCapture], Optional[str]]:
+        """
+        Tenta inicializar uma câmera.
+        
+        Args:
+            camera_id: ID da câmera
+            backend: Backend a usar (não utilizado)
+            
+        Returns:
+            Tupla (captura, erro)
+        """
+        try:
+            cap = cv2.VideoCapture(0)
+            if cap.isOpened():
+                return cap, None
+            return None, "Não foi possível abrir a câmera"
+        except Exception as e:
+            return None, str(e)
+
 class CameraInfo:
     """Informações sobre uma câmera."""
     def __init__(self, id: int, name: str, backend: Optional[int] = None):
@@ -55,149 +79,6 @@ class CameraInfo:
             f"[{self.backend_name}]"
         )
 
-class CameraBackend:
-    """Gerenciador de backends de câmera."""
-    
-    @staticmethod
-    def get_available_backends() -> List[Optional[int]]:
-        """
-        Retorna lista de backends disponíveis para o sistema.
-        
-        Returns:
-            Lista de backends
-        """
-        if platform.system() == 'Windows':
-            return [None, cv2.CAP_DSHOW, cv2.CAP_MSMF]  # Tenta backend padrão primeiro
-        return [None]  # Backend padrão para outros sistemas
-    
-    @staticmethod
-    def try_backend(camera_id: int,
-                   backend: Optional[int],
-                   timeout: float = 2.0) -> Tuple[Optional[cv2.VideoCapture], Optional[str]]:
-        """
-        Tenta inicializar uma câmera com um backend específico.
-        
-        Args:
-            camera_id: ID da câmera
-            backend: Backend a usar
-            timeout: Tempo máximo de tentativa
-            
-        Returns:
-            Tupla (captura, erro)
-        """
-        start_time = time.time()
-        cap = None
-        
-        try:
-            logger.info(f"Tentando câmera {camera_id} com backend {backend}")
-            
-            # Inicializar câmera
-            if backend == cv2.CAP_DSHOW:
-                cap = cv2.VideoCapture(camera_id + cv2.CAP_DSHOW)
-            elif backend == cv2.CAP_MSMF:
-                cap = cv2.VideoCapture(camera_id + cv2.CAP_MSMF)
-            elif backend is None:
-                # Para backend padrão, tenta diretamente o ID
-                cap = cv2.VideoCapture(camera_id, cv2.CAP_ANY)
-            else:
-                # Outros backends
-                cap = cv2.VideoCapture(camera_id)
-            
-            if not cap.isOpened():
-                if cap:
-                    cap.release()
-                return None, "Não foi possível abrir a câmera"
-            
-            # Configurar propriedades
-            cap.set(cv2.CAP_PROP_FRAME_WIDTH, VIDEO_CONFIG['width'])
-            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, VIDEO_CONFIG['height'])
-            cap.set(cv2.CAP_PROP_FPS, 30)
-            cap.set(cv2.CAP_PROP_BUFFERSIZE, 3)
-            
-            # Verificar estabilidade
-            frames_read = 0
-            required_frames = 3
-            frame_times = []
-            
-            while time.time() - start_time < timeout:
-                ret, frame = cap.read()
-                if ret and frame is not None:
-                    frame_times.append(time.time())
-                    frames_read += 1
-                    
-                    if frames_read >= required_frames:
-                        # Calcular FPS real
-                        if len(frame_times) >= 2:
-                            intervals = [
-                                frame_times[i+1] - frame_times[i]
-                                for i in range(len(frame_times)-1)
-                            ]
-                            avg_interval = sum(intervals) / len(intervals)
-                            fps = 1.0 / avg_interval if avg_interval > 0 else 0
-                            logger.info(f"FPS calculado: {fps:.1f}")
-                        
-                        return cap, None
-                else:
-                    frames_read = 0
-                    frame_times.clear()
-                
-                time.sleep(0.1)
-            
-            # Timeout
-            if cap:
-                cap.release()
-            return None, "Timeout ao tentar ler frames"
-            
-        except Exception as e:
-            logger.error(f"Erro ao testar câmera: {str(e)}")
-            if cap:
-                cap.release()
-            return None, str(e)
-
-class CameraDetectionThread(QThread):
-    """Thread para detectar câmeras disponíveis."""
-    
-    camera_found = pyqtSignal(CameraInfo)  # Emitido quando uma câmera é encontrada
-    progress = pyqtSignal(int, int)        # Emitido para atualizar progresso
-    finished = pyqtSignal()                # Emitido quando a detecção termina
-    
-    def run(self):
-        """Executa a detecção de câmeras."""
-        try:
-            backends = CameraBackend.get_available_backends()
-            total_steps = len(backends) * 2  # 2 câmeras por backend
-            current_step = 0
-            
-            for i in range(2):
-                camera_found = False
-                for backend in backends:
-                    current_step += 1
-                    self.progress.emit(current_step, total_steps)
-                    
-                    cap, error = CameraBackend.try_backend(i, backend)
-                    if cap:
-                        # Coletar informações
-                        info = CameraInfo(i, f"Câmera {i}", backend)
-                        info.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                        info.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                        info.fps = cap.get(cv2.CAP_PROP_FPS)
-                        
-                        info.capture = cap  # Armazena a instância do VideoCapture
-                        self.camera_found.emit(info)
-                        camera_found = True
-                        break  # Câmera encontrada com este backend
-                
-                if camera_found:
-                    break  # Se encontrou câmera, para a busca completamente
-                
-                if cap:  # Se não deu certo, libera a câmera
-                    cap.release()
-            
-            self.finished.emit()
-            
-        except Exception as e:
-            logger.error(f"Erro na detecção de câmeras: {str(e)}")
-            self.finished.emit()
 
 class VideoSourceDialog(QDialog):
     """Diálogo para seleção da fonte de vídeo."""
@@ -335,12 +216,16 @@ class VideoSourceDialog(QDialog):
     def _cleanup_cameras(self):
         """Libera os recursos das câmeras."""
         try:
+            logger.info("Liberando recursos das câmeras")
             for camera in self.available_cameras:
                 if camera.capture:
-                    camera.capture.release()
+                    if camera.capture.isOpened():
+                        camera.capture.release()
+                        logger.info(f"Câmera {camera.id} liberada")
                     camera.capture = None
             self.available_cameras.clear()
             self.camera_combo.clear()
+            logger.info("Todos os recursos liberados")
         except Exception as e:
             logger.error(f"Erro ao limpar câmeras: {str(e)}")
     
@@ -350,79 +235,34 @@ class VideoSourceDialog(QDialog):
             # Limpa câmeras anteriores
             self._cleanup_cameras()
             
-            # Atualiza interface
-            self.status_label.setText("Detectando câmeras...")
-            self.status_label.setStyleSheet("")
-            self.search_camera_btn.setEnabled(False)
-            self.camera_frame.hide()
-            self.ok_btn.hide()
-            
-            # Inicia thread de detecção
-            self.detection_thread = CameraDetectionThread()
-            self.detection_thread.camera_found.connect(self._add_camera)
-            self.detection_thread.progress.connect(self._update_progress)
-            self.detection_thread.finished.connect(self._detection_finished)
-            self.detection_thread.start()
-            
-        except Exception as e:
-            logger.error(f"Erro ao iniciar detecção: {str(e)}")
-            self.status_label.setText("Erro ao detectar câmeras")
-            self.status_label.setStyleSheet("color: red;")
-            self.search_camera_btn.setEnabled(True)
-    
-    def _add_camera(self, camera: CameraInfo):
-        """
-        Adiciona uma câmera à lista.
-        
-        Args:
-            camera: Informações da câmera
-        """
-        try:
-            self.available_cameras.append(camera)
-            self.camera_combo.addItem(str(camera), camera)
-            logger.info(f"Câmera adicionada: {camera}")
-            
-        except Exception as e:
-            logger.error(f"Erro ao adicionar câmera: {str(e)}")
-    
-    def _update_progress(self, current: int, total: int):
-        """
-        Atualiza o progresso da detecção.
-        
-        Args:
-            current: Passo atual
-            total: Total de passos
-        """
-        try:
-            self.progress_label.setText(f"Progresso: {current}/{total}")
-            self.progress_label.show()
-            
-        except Exception as e:
-            logger.error(f"Erro ao atualizar progresso: {str(e)}")
-    
-    def _detection_finished(self):
-        """Finaliza o processo de detecção."""
-        try:
-            self.progress_label.hide()
-            self.search_camera_btn.setEnabled(True)
-            
-            if self.available_cameras:
-                self.status_label.setText(
-                    f"Câmeras detectadas: {len(self.available_cameras)}"
-                )
+            # Tenta abrir a câmera
+            cap = cv2.VideoCapture(0)
+            if cap.isOpened():
+                # Cria informações da câmera
+                info = CameraInfo(0, "Câmera 0")
+                info.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                info.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                info.fps = cap.get(cv2.CAP_PROP_FPS)
+                info.capture = cap
+                
+                # Adiciona a câmera
+                self.available_cameras.append(info)
+                self.camera_combo.addItem(str(info), info)
+                
+                # Atualiza interface
+                self.status_label.setText("Câmera detectada")
                 self.status_label.setStyleSheet("color: green;")
-                self.camera_frame.show()  # Mostra o frame de seleção
-                self.ok_btn.show()  # Mostra o botão OK
-                logger.info("Detecção concluída com sucesso")
+                self.camera_frame.show()
+                self.ok_btn.show()
             else:
                 self.status_label.setText("Nenhuma câmera detectada")
                 self.status_label.setStyleSheet("color: red;")
-                self.camera_frame.hide()
-                self.ok_btn.hide()
-                logger.warning("Nenhuma câmera detectada")
-            
+                
         except Exception as e:
-            logger.error(f"Erro ao finalizar detecção: {str(e)}")
+            logger.error(f"Erro ao detectar câmera: {str(e)}")
+            self.status_label.setText("Erro ao detectar câmera")
+            self.status_label.setStyleSheet("color: red;")
+    
     
     def _update_camera_info(self, index: int):
         """
@@ -492,8 +332,11 @@ class VideoSourceDialog(QDialog):
         try:
             camera = self.camera_combo.currentData()
             if camera:
-                logger.info(f"Câmera retornada: {camera}")
-                return camera
+                # Sempre cria uma nova conexão
+                cap = cv2.VideoCapture(0)
+                if cap.isOpened():
+                    camera.capture = cap
+                    return camera
             return None
             
         except Exception as e:

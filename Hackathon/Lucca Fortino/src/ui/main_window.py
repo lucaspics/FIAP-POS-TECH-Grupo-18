@@ -31,6 +31,7 @@ from .alert_view import AlertView
 from .video_tab import VideoTab
 from .settings_tab import SettingsTab
 from .source_dialog import VideoSourceDialog
+from .about_tab import AboutTab
 from core.video_utils import resize_frame, bgr_to_rgb
 
 logger = get_logger('main_window')
@@ -99,6 +100,10 @@ class SecurityCameraApp(QMainWindow):
             # Aba de configurações
             self.settings_tab = SettingsTab()
             self.tabs.addTab(self.settings_tab, "Configurações")
+            
+            # Aba sobre desenvolvedores
+            self.about_tab = AboutTab()
+            self.tabs.addTab(self.about_tab, "Desenvolvido por")
             
             # Área de alertas
             self.alert_view = AlertView()

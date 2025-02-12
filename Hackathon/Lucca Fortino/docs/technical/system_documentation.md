@@ -85,9 +85,9 @@ O VisionGuard é um sistema avançado de monitoramento de segurança que utiliza
   - Otimizações de inferência
 
 - **email_sender.py**
-  - Envio assíncrono de emails
-  - Formatação de mensagens
-  - Buffer de notificações
+  - Worker dedicado para envio de emails
+  - Processamento assíncrono em thread separada
+  - Fila de mensagens não-bloqueante
 
 - **video_utils.py**
   - Processamento de vídeo
@@ -165,24 +165,23 @@ O VisionGuard é um sistema avançado de monitoramento de segurança que utiliza
    - Prioriza processamento
    - Limita uso de recursos
 
-## Sistema Inteligente de Alertas
+## Sistema de Alertas
 
-### Níveis de Criticidade
-1. **Baixa Prioridade**
-   - Detecções com confiança < 50%
-   - Armazenamento temporário
-   - Sem notificação imediata
+### Processamento de Alertas
+- Threshold mínimo de confiança configurável (padrão: 0.25)
+- Alertas são gerados para todas as detecções acima do threshold
+- Todos os alertas incluem:
+  - Dados da detecção
+  - Timestamp
+  - Captura do frame (se habilitado)
+  - Notificação por email (se habilitado)
 
-2. **Média Prioridade**
-   - Confiança entre 50% e 75%
-   - Armazenamento por 24h
-   - Notificação na interface
-
-3. **Alta Prioridade**
-   - Confiança > 75%
-   - Armazenamento permanente
-   - Alerta imediato
-   - Captura de frame
+### Armazenamento de Alertas
+- Limite máximo de alertas ativos (padrão: 1000)
+- Sistema de rotação automática:
+  - Alertas mais antigos são movidos para arquivo
+  - Mantém os alertas mais recentes ativos
+- Arquivamento inclui tanto dados JSON quanto imagens
 
 ## Configurações do Sistema
 
@@ -211,11 +210,10 @@ VIDEO_CONFIG = {
 ### 3. Configurações de Alertas
 ```python
 ALERT_CONFIG = {
-    'min_time_between_alerts': 1000,
-    'save_frames': True,
-    'save_detections': True,
-    'enable_email_alerts': True,
-    'email_buffer_interval': 20
+    'min_time_between_alerts': 1000,  # Intervalo mínimo entre alertas em ms
+    'save_frames': True,              # Salvar frames das detecções
+    'save_detections': True,          # Salvar dados das detecções
+    'enable_email_alerts': True       # Habilitar alertas por email
 }
 ```
 

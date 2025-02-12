@@ -65,8 +65,8 @@ sequenceDiagram
     
     AM->>AM: Valida Alerta
     AM->>AV: Atualiza Interface
-    AM->>ES: Agenda Notificação
-    Note over ES: Buffer de 20s
+    AM->>ES: Envia para Worker
+    Note over ES: Processamento Assíncrono
 ```
 
 ## Ciclo de Vida dos Dados

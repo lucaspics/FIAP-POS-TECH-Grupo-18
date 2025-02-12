@@ -6,24 +6,13 @@ Sistema de detecção de objetos cortantes em tempo real usando YOLOv8.
 
 1. Clone o repositório
 2. Execute `install.bat` para instalar as dependências
-3. Configure as credenciais de email:
-   - Copie `.env.example` para `.env`
-   - Para usar o Gmail:
-     1. Ative a verificação em duas etapas na sua conta Google
-     2. Gere uma senha de app em https://myaccount.google.com/apppasswords
-     3. Use essa senha no arquivo .env
-   - Preencha as credenciais no arquivo .env:
-     ```env
-     SMTP_EMAIL=seu-email@gmail.com
-     SMTP_PASSWORD=sua-senha-de-app
-     ```
 
 ## Uso
 
 1. Execute `run.bat` para iniciar o sistema
 2. Use a interface para:
-   - Conectar uma câmera ou carregar um vídeo
-   - Configurar email para alertas
+   - Conectar uma câmera ( wip ) ou carregar um vídeo
+   - Configurar email para alertas ( em settings )
    - Ajustar parâmetros de detecção
    - Visualizar detecções em tempo real
    - Receber alertas por email
@@ -44,9 +33,10 @@ Sistema de detecção de objetos cortantes em tempo real usando YOLOv8.
 
 ### Performance
 - O sistema foi otimizado para processamento local
-- Comunicação direta entre componentes para menor latência
-- Processamento assíncrono de alertas e emails
-- Gerenciamento eficiente de memória
+- Worker dedicado em thread separada para envio de emails
+- Processamento totalmente assíncrono via filas
+- Sem bloqueio da interface durante operações
+- Gerenciamento eficiente de memória e recursos
 
 ## Requisitos
 
@@ -71,12 +61,14 @@ VisionGuard/
 
 ## Alertas por Email
 
-O sistema envia alertas por email quando detecta objetos cortantes. Os emails incluem:
+O sistema processa alertas por email através de um worker dedicado, garantindo que a interface permaneça responsiva. Cada email inclui:
 - Timestamp da detecção
 - Imagem do frame com a detecção
 - Nível de confiança da detecção
 - Tempo do vídeo
 - Visualização gráfica da confiança
+
+O processamento assíncrono garante que múltiplos alertas possam ser enviados sem impactar a performance do sistema.
 
 ## Troubleshooting
 
@@ -85,6 +77,8 @@ O sistema envia alertas por email quando detecta objetos cortantes. Os emails in
 2. Confirme se a verificação em duas etapas está ativa no Gmail
 3. Use uma senha de app gerada especificamente para o VisionGuard
 4. Verifique os logs para mensagens de erro detalhadas
+5. Monitore o status do worker de email nos logs do sistema
+6. Reinicie a aplicação se o worker de email não estiver respondendo
 
 ### Problemas de Detecção
 1. Ajuste o threshold de confiança

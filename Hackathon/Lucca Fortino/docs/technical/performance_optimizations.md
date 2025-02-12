@@ -84,14 +84,14 @@ VIDEO_CONFIG = {
 ### 6.1 Processamento de Alertas
 ```python
 ALERT_CONFIG = {
-    'min_time_between_alerts': 1000,  # Evita spam
-    'email_buffer_interval': 20       # Batch de emails
+    'min_time_between_alerts': 1000,  # Evita spam de alertas
 }
 ```
 
-### 6.2 Notificações
-- Buffer de notificações
-- Envio em lote de emails
+### 6.2 Sistema de Email
+- Worker dedicado em thread separada
+- Fila assíncrona de mensagens
+- Processamento não-bloqueante
 - Compressão de anexos
 - Priorização de alertas
 

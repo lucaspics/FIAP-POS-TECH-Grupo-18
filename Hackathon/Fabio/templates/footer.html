@@ -1,0 +1,51 @@
+<footer>
+Vision guard - 2025
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+  // Conectar ao WebSocket
+  const socket = io();
+
+  // Atualizar a lista de mensagens quando receber uma atualização
+  socket.on('update_messages', function(data) {
+      const messagesList = document.querySelector('.messages');
+      messagesList.innerHTML = '';  // Limpar a lista atual
+      const baseUrl = window.location.href.replace("#","");
+      let html = '';
+      data.messages.forEach(function(message) {
+           html += `
+          <tr>
+            <th class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left text-blueGray-700 ">
+              <img class="w-[150px]" src="${baseUrl}/static/screenshots/${ message[1] }" />
+            </th>
+            <th class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left text-blueGray-700 ">
+              ${ message[2] }
+            </th>
+            <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 ">
+              ${ message[3] }
+            </td>
+            <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 ">
+              <a href="#" data-id="${ message[0] }" class="border-0 text-white bg-red-500 text-xs font-bold uppercase px-3 py-1 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 delete-incident" type="button">Excluir</a>
+            </td>
+          </tr>
+          `;
+      });
+      messagesList.innerHTML = html;
+
+      const deleteButtons = document.querySelectorAll('.delete-incident');
+
+    deleteButtons.forEach(function(button) {
+      button.addEventListener('click', function(event) {
+        console.log('delete');
+        event.preventDefault();
+        const id = event.target.getAttribute('data-id');
+        fetch(`/delete/${id}`, {
+          method: 'DELETE'
+        });
+
+        button.closest('tr').remove();
+      });
+    });
+  });
+
+</script>

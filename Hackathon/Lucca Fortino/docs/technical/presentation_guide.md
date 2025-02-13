@@ -1,138 +1,116 @@
-# Guia de Apresentação Técnica - VisionGuard
+# Guia de Apresentação do Sistema VisionGuard
 
-## 1. Introdução (2-3 minutos)
+## 1. Inicialização do Sistema
+O sistema inicia através do arquivo `src/main.py`, que configura a aplicação Qt e inicializa a janela principal.
 
-### 1.1 Visão Geral do Sistema
-- Sistema de monitoramento em tempo real
-- Detecção de objetos com YOLOv8
-- Processamento assíncrono e otimizado
-- Interface gráfica intuitiva
+**Arquivos e linhas relevantes:**
+- `src/main.py` (linhas 7-22): Função principal que inicializa a aplicação
+- `src/ui/main_window.py` (linhas 42-69): Inicialização dos gerenciadores principais
+  - Inicialização do CameraManager
+  - Inicialização do AnalysisManager com modelo de detecção
+  - Configuração da interface gráfica
 
-### 1.2 Arquitetura em Camadas
-- UI Layer: Interface do usuário
-- Processing Layer: Processamento de vídeo
-- Core Layer: Detecção e alertas
-- Data Layer: Persistência e configurações
+## 2. Captura e Processamento de Frames
+O sistema suporta tanto câmeras ao vivo quanto arquivos de vídeo.
 
-## 2. Componentes Principais (5-7 minutos)
+**Arquivos e linhas relevantes:**
+- `src/ui/main_window.py`:
+  - Linhas 165-229: Conexão com fontes de vídeo
+  - Linhas 257-294: Processamento de frames
+  - Configuração de timers para atualização contínua
 
-### 2.1 Sistema de Detecção (detector.py)
-- Modelo YOLOv8 otimizado
-- Processamento em GPU/CPU
-- Sistema de cache inteligente
-- Gerenciamento de recursos
+**Fluxo de processamento:**
+1. Captura do frame da fonte de vídeo
+2. Redimensionamento para altura alvo
+3. Atualização da interface
+4. Envio para análise
 
-### 2.2 Processamento Assíncrono (analysis_worker.py)
-- Workers dedicados
-- Fila de processamento
-- Balanceamento de carga
-- Métricas em tempo real
+## 3. Sistema de Detecção
+O detector utiliza YOLOv8 otimizado para processamento local.
 
-### 2.3 Gerenciamento de Alertas (alert_manager.py)
-- Validação de detecções
-- Sistema de persistência
-- Rotação automática
-- Notificações por email
+**Arquivos e linhas relevantes:**
+- `src/core/detector.py`:
+  - Linhas 68-84: Inicialização do detector
+  - Linhas 124-185: Método de detecção assíncrono
+  - Linhas 187-242: Visualização das detecções
 
-### 2.4 Interface do Usuário (main_window.py)
-- Design modular
-- Múltiplas visualizações
-- Controles intuitivos
-- Feedback em tempo real
+**Características principais:**
+- Carregamento otimizado do modelo
+- Processamento assíncrono
+- Gerenciamento automático de memória CUDA
+- Sistema de warmup para melhor performance inicial
 
-## 3. Fluxo de Processamento (4-5 minutos)
+## 4. Gerenciamento de Alertas
+Sistema robusto para gerenciamento e persistência de alertas.
 
-### 3.1 Captura de Vídeo
-```mermaid
-sequenceDiagram
-    CameraManager->>VideoTab: Frame
-    VideoTab->>AnalysisWorker: Processamento
-    AnalysisWorker->>Detector: Análise
-```
+**Arquivos e linhas relevantes:**
+- `src/core/alert_manager.py`:
+  - Linhas 124-258: Processamento de detecções e geração de alertas
+  - Linhas 289-357: Gerenciamento de alertas recentes
+  - Linhas 91-123: Sistema de rotação de alertas
 
-### 3.2 Pipeline de Detecção
-- Redimensionamento inteligente
-- Processamento em batch
-- Filtros de confiança
-- Cache de resultados
+**Funcionalidades:**
+- Armazenamento de alertas com imagens
+- Sistema de rotação automática
+- Gerenciamento de diretórios
+- Arquivamento automático
 
-### 3.3 Sistema de Alertas
-- Validação de detecções
-- Geração de alertas
-- Notificações por email
-- Armazenamento persistente
+## 5. Notificações por Email
+Sistema assíncrono de notificações por email com worker dedicado.
 
-## 4. Otimizações Implementadas (3-4 minutos)
+**Arquivos e linhas relevantes:**
+- `src/core/email_sender.py`:
+  - Linhas 21-87: Worker dedicado para envio em background
+  - Linhas 142-186: Envio assíncrono de alertas
+  - Linhas 235-324: Geração do corpo do email em HTML
 
-### 4.1 Performance
-- Workers assíncronos
-- Cache multi-nível
-- Processamento em batch
-- Gerenciamento de memória
+**Características:**
+- Worker em thread separada
+- Fila assíncrona de emails
+- Templates HTML responsivos
+- Suporte a múltiplas imagens
+- Sistema de retry automático
 
-### 4.2 Interface
-- Renderização eficiente
-- Updates em batch
-- Throttling de eventos
-- Cache de UI
+## Pontos de Demonstração
 
-### 4.3 Recursos
-- Buffer circular
-- Compressão de dados
-- Limpeza automática
-- Monitoramento de uso
+1. **Inicialização:**
+   - Mostrar carregamento do modelo
+   - Verificar inicialização dos gerenciadores
 
-## 5. Demonstração Prática (5-6 minutos)
+2. **Captura:**
+   - Demonstrar conexão com câmera
+   - Mostrar carregamento de vídeo
+   - Exibir controles de playback
 
-### 5.1 Inicialização do Sistema
-- Carregamento do modelo
-- Configuração de workers
-- Inicialização da interface
+3. **Detecção:**
+   - Mostrar detecções em tempo real
+   - Exibir métricas de performance
+   - Demonstrar ajuste de confiança
 
-### 5.2 Funcionalidades
-- Conexão com câmera/vídeo
-- Detecção em tempo real
-- Geração de alertas
-- Navegação no histórico
+4. **Alertas:**
+   - Mostrar geração de alertas
+   - Exibir sistema de arquivamento
+   - Demonstrar visualização de histórico
 
-### 5.3 Métricas
-- Performance do sistema
-- Taxa de detecção
-- Uso de recursos
+5. **Notificações:**
+   - Configurar email de teste
+   - Mostrar email recebido
+   - Exibir template responsivo
+
+## Métricas e Logs
+
+Para acompanhamento durante a apresentação:
+- FPS atual
+- Número de detecções
+- Workers ativos
+- Uso de memória
 - Tempo de processamento
+- Taxa de alertas
 
-## 6. Considerações Técnicas (2-3 minutos)
+## Recuperação de Erros
 
-### 6.1 Requisitos
-- Python 3.8+
-- CUDA (opcional)
-- 8GB+ RAM
-- CPU multi-core
-
-### 6.2 Pontos de Extensão
-- Suporte multi-modelo
-- Integrações externas
-- Customização de alertas
-- Exportação de dados
-
-## Tempo Total Estimado: 20-25 minutos
-
-## Notas para Apresentação
-
-### Pontos-Chave
-1. Enfatizar processamento assíncrono
-2. Demonstrar otimizações de performance
-3. Mostrar sistema de alertas em ação
-4. Destacar métricas em tempo real
-
-### Dicas
-- Usar diagramas para explicar fluxos
-- Demonstrar casos de uso reais
-- Mostrar métricas durante operação
-- Responder questões técnicas com exemplos
-
-### Materiais de Suporte
-- Documentação técnica completa em /docs/technical/
-- Diagramas de arquitetura
-- Exemplos de código
-- Métricas de benchmark
+Demonstrar recuperação em cenários como:
+- Perda de conexão com câmera
+- Erro de processamento
+- Falha de rede para emails
+- Problemas de permissão de arquivos

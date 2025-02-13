@@ -63,13 +63,14 @@ class AnalysisManager(QObject):
             logger.error(f"Erro ao inicializar sistema de análise: {str(e)}")
             return False
     
-    def process_frame(self, frame: np.ndarray, video_time: int = 0) -> bool:
+    def process_frame(self, frame: np.ndarray, video_time: int = 0, is_last_frame: bool = False) -> bool:
         """
         Processa um novo frame.
         
         Args:
             frame: Frame para processar
             video_time: Tempo do vídeo em ms
+            is_last_frame: Indica se é o último frame do vídeo
             
         Returns:
             bool indicando se o frame foi enviado para análise
@@ -87,9 +88,10 @@ class AnalysisManager(QObject):
             
             # Verificar se devemos analisar este frame
             frames_since_last = self.current_frame_count - self.last_analyzed_frame
-            if (frames_since_last >= self.analysis_interval and 
+            # Sempre analisar o último frame ou seguir o intervalo normal
+            if is_last_frame or (frames_since_last >= self.analysis_interval and
                 len(self.active_workers) < self.max_concurrent_workers):
-                self.analyze_frame(frame)
+                self.analyze_frame(frame, is_last_frame)
                 self.last_analyzed_frame = self.current_frame_count
                 return True
             
@@ -99,12 +101,13 @@ class AnalysisManager(QObject):
             logger.error(f"Erro ao processar frame: {str(e)}")
             return False
     
-    def analyze_frame(self, frame: np.ndarray):
+    def analyze_frame(self, frame: np.ndarray, is_last_frame: bool = False):
         """
         Inicia a análise de um frame.
         
         Args:
             frame: Frame para analisar
+            is_last_frame: Indica se é o último frame do vídeo
         """
         try:
             # Preparar frame
@@ -120,7 +123,8 @@ class AnalysisManager(QObject):
             worker = AnalysisWorker(
                 frame_rgb,
                 self.current_frame_count,
-                self.current_video_time
+                self.current_video_time,
+                is_last_frame=is_last_frame
             )
             
             # Conectar sinais

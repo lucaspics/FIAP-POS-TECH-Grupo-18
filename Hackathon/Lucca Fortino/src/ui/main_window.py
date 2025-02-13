@@ -286,8 +286,19 @@ class SecurityCameraApp(QMainWindow):
                 video_time = self.camera_manager.get_current_time()
                 self.video_tab.update_time(video_time)
             
+            # Verificar se é o último frame do vídeo
+            is_last_frame = False
+            if not self.camera_manager.is_camera:
+                total_frames = int(self.camera_manager.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                current_frame = int(self.camera_manager.cap.get(cv2.CAP_PROP_POS_FRAMES))
+                is_last_frame = current_frame >= total_frames - 1
+
             # Analisar frame
-            self.analysis_manager.process_frame(frame, self.camera_manager.get_current_time())
+            self.analysis_manager.process_frame(
+                frame,
+                self.camera_manager.get_current_time(),
+                is_last_frame=is_last_frame
+            )
             
         except Exception as e:
             logger.error(f"Erro ao atualizar frame: {str(e)}")
@@ -328,14 +339,15 @@ class SecurityCameraApp(QMainWindow):
     def update_status(self):
         """Atualiza a barra de status."""
         try:
-            if self.camera_manager.cap and self.camera_manager.cap.isOpened():
-                stats = self.analysis_manager.get_stats()
-                self.status_bar.showMessage(
-                    f"Fonte: {'Câmera' if self.camera_manager.is_camera else 'Vídeo'} | "
-                    f"Frames: {stats['total_frames']} | "
-                    f"Análises: {stats['analyzed_frames']} | "
-                    f"Detecções: {stats['total_detections']}"
-                )
+            if hasattr(self, 'camera_manager') and hasattr(self, 'analysis_manager'):
+                if self.camera_manager.cap and self.camera_manager.cap.isOpened():
+                    stats = self.analysis_manager.get_stats()
+                    self.status_bar.showMessage(
+                        f"Fonte: {'Câmera' if self.camera_manager.is_camera else 'Vídeo'} | "
+                        f"Frames: {stats['total_frames']} | "
+                        f"Análises: {stats['analyzed_frames']} | "
+                        f"Detecções: {stats['total_detections']}"
+                    )
         except Exception as e:
             logger.error(f"Erro ao atualizar status: {str(e)}")
     

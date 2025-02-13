@@ -54,15 +54,17 @@ class Detection:
 
 class DetectionResult:
     """Classe para representar o resultado completo de uma detecção."""
-    def __init__(self, detections: List[Detection], timestamp: datetime):
+    def __init__(self, detections: List[Detection], timestamp: datetime, is_last_frame: bool = False):
         self.detections = detections
         self.timestamp = timestamp
+        self.is_last_frame = is_last_frame
 
     def to_dict(self) -> Dict:
         """Converte o resultado para dicionário."""
         return {
             "timestamp": self.timestamp.isoformat(),
-            "detections": [det.to_dict() for det in self.detections]
+            "detections": [det.to_dict() for det in self.detections],
+            "is_last_frame": getattr(self, 'is_last_frame', False)
         }
 
 class ObjectDetector:
@@ -148,7 +150,7 @@ class ObjectDetector:
             results = await asyncio.to_thread(inference_job)
             
             if results is None:
-                return DetectionResult([], datetime.now())
+                return DetectionResult([], datetime.now(), is_last_frame=False)
 
             # Processar resultados
             boxes_np = results.boxes.data.cpu().numpy()

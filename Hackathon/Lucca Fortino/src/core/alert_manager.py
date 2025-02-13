@@ -146,11 +146,12 @@ class AlertManager:
             if not high_confidence_detections:
                 return False
 
-            # Verificar intervalo mínimo entre alertas
-            if (self.last_alert_time and 
-                (datetime.now() - self.last_alert_time).total_seconds() * 1000 < 
-                ALERT_CONFIG['min_time_between_alerts']):
-                return False
+            # Verificar intervalo mínimo entre alertas (ignorar para o último frame)
+            if not getattr(result, 'is_last_frame', False):  # Adicionar verificação de último frame
+                if (self.last_alert_time and
+                    (datetime.now() - self.last_alert_time).total_seconds() * 1000 <
+                    ALERT_CONFIG['min_time_between_alerts']):
+                    return False
 
             # Gerar alerta
             alert_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
@@ -198,7 +199,6 @@ class AlertManager:
                     image_path = images_dir / f"{alert_id}.jpg"
                     self.logger.info(f"Tentando salvar imagem em: {image_path}")
                     success = cv2.imwrite(str(image_path), frame_with_detections)
-                    success = cv2.imwrite(str(image_path), frame)
                     
                     if success:
                         image_path_abs = str(image_path.absolute())

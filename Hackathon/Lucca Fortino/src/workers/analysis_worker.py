@@ -20,6 +20,7 @@ class AnalysisWorker(QThread):
     analysis_complete = pyqtSignal(dict)  # Sinal emitido quando a análise é concluída
     analysis_error = pyqtSignal(str)      # Sinal emitido em caso de erro
     metrics_update = pyqtSignal(dict)     # Sinal emitido com métricas de performance
+    last_frame_complete = pyqtSignal()    # Sinal emitido quando último frame é processado
     
     # Compartilhar instâncias entre workers
     _detector: Optional[ObjectDetector] = None
@@ -56,8 +57,7 @@ class AnalysisWorker(QThread):
             except Exception as e:
                 logger.error(f"Erro ao inicializar AlertManager: {str(e)}")
                 raise
-    
-    def __init__(self, frame_rgb, frame_number: Optional[int] = None, video_time: int = 0):
+    def __init__(self, frame_rgb, frame_number: Optional[int] = None, video_time: int = 0, is_last_frame: bool = False):
         """
         Inicializa o worker.
         
@@ -65,6 +65,7 @@ class AnalysisWorker(QThread):
             frame_rgb: Frame em formato RGB
             frame_number: Número do frame (opcional)
             video_time: Tempo do vídeo em ms
+            is_last_frame: Indica se é o último frame do vídeo
         """
         super().__init__()
         self.logger = get_logger('analysis_worker')
@@ -72,9 +73,11 @@ class AnalysisWorker(QThread):
         self.frame_number = frame_number
         self.video_time = video_time
         self.start_time = time.time()
+        self.is_last_frame = is_last_frame
         
         # Verificar se as instâncias compartilhadas foram inicializadas
         if self._detector is None or self._alert_manager is None:
+            raise RuntimeError("Worker não inicializado. Chame AnalysisWorker.initialize() primeiro")
             raise RuntimeError("Worker não inicializado. Chame AnalysisWorker.initialize() primeiro")
     
     def _emit_metrics(self, analysis_time: float, detection_count: int):
@@ -117,6 +120,10 @@ class AnalysisWorker(QThread):
                 frame_bgr,
                 conf_threshold=MODEL_CONFIG['confidence_threshold']
             )
+            
+            # Adicionar informação de último frame ao resultado
+            if hasattr(result, 'is_last_frame'):
+                result.is_last_frame = self.is_last_frame
             
             # Processar alerta se necessário
             alert_id = None
@@ -179,6 +186,11 @@ class AnalysisWorker(QThread):
             
             if result:
                 self.analysis_complete.emit(result)
+                # Emitir sinal adicional se for o último frame
+                if self.is_last_frame:
+                    # Aguardar um pequeno tempo para garantir que o resultado seja processado
+                    self._event_loop.run_until_complete(asyncio.sleep(0.1))
+                    self.last_frame_complete.emit()
             else:
                 self.analysis_error.emit("Análise não retornou resultados")
                 

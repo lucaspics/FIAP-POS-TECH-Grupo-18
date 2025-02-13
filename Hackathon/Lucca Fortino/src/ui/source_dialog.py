@@ -27,57 +27,27 @@ from config.app_config import VIDEO_CONFIG
 logger = get_logger('source_dialog')
 
 class CameraBackend:
-    """Gerenciador de backends de câmera."""
+    """Gerenciador de câmera simplificado."""
     
     @staticmethod
     def try_backend(camera_id: int,
-                     backend: Optional[int] = None) -> Tuple[Optional[cv2.VideoCapture], Optional[str]]:
-        """
-        Tenta inicializar uma câmera.
-        
-        Args:
-            camera_id: ID da câmera
-            backend: Backend a usar (não utilizado)
-            
-        Returns:
-            Tupla (captura, erro)
-        """
-        try:
-            cap = cv2.VideoCapture(0)
-            if cap.isOpened():
-                return cap, None
-            return None, "Não foi possível abrir a câmera"
-        except Exception as e:
-            return None, str(e)
+                   backend: Optional[int] = None) -> Tuple[Optional[cv2.VideoCapture], Optional[str]]:
+        """Inicializa uma câmera de forma direta."""
+        cap = cv2.VideoCapture(camera_id)
+        return (cap, None) if cap.isOpened() else (None, "Câmera não disponível")
 
 class CameraInfo:
     """Informações sobre uma câmera."""
-    def __init__(self, id: int, name: str, backend: Optional[int] = None):
+    def __init__(self, id: int, name: str):
         self.id = id
         self.name = name
-        self.backend = backend
         self.width = 0
         self.height = 0
         self.fps = 0
-        self.backend_name = self._get_backend_name()
-        self.capture = None  # Armazena a instância do VideoCapture
-    
-    def _get_backend_name(self) -> str:
-        """Retorna o nome do backend."""
-        if self.backend is None:
-            return "Padrão"
-        elif self.backend == cv2.CAP_DSHOW:
-            return "DirectShow"
-        elif self.backend == cv2.CAP_MSMF:
-            return "Media Foundation"
-        else:
-            return f"Backend {self.backend}"
+        self.capture = None
     
     def __str__(self) -> str:
-        return (
-            f"{self.name} ({self.width}x{self.height} @ {self.fps:.1f}fps) "
-            f"[{self.backend_name}]"
-        )
+        return f"{self.name} ({self.width}x{self.height} @ {self.fps:.1f}fps)"
 
 
 class VideoSourceDialog(QDialog):
@@ -214,74 +184,43 @@ class VideoSourceDialog(QDialog):
         layout.addWidget(error)
     
     def _cleanup_cameras(self):
-        """Libera os recursos das câmeras."""
-        try:
-            logger.info("Liberando recursos das câmeras")
-            for camera in self.available_cameras:
-                if camera.capture:
-                    if camera.capture.isOpened():
-                        camera.capture.release()
-                        logger.info(f"Câmera {camera.id} liberada")
-                    camera.capture = None
-            self.available_cameras.clear()
-            self.camera_combo.clear()
-            logger.info("Todos os recursos liberados")
-        except Exception as e:
-            logger.error(f"Erro ao limpar câmeras: {str(e)}")
+        """Libera os recursos das câmeras de forma otimizada."""
+        for camera in self.available_cameras:
+            if camera.capture and camera.capture.isOpened():
+                camera.capture.release()
+                camera.capture = None
+        self.available_cameras.clear()
+        self.camera_combo.clear()
     
     def detect_cameras(self):
-        """Inicia a detecção de câmeras."""
-        try:
-            # Limpa câmeras anteriores
-            self._cleanup_cameras()
-            
-            # Tenta abrir a câmera
-            cap = cv2.VideoCapture(0)
-            if cap.isOpened():
-                # Cria informações da câmera
-                info = CameraInfo(0, "Câmera 0")
-                info.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                info.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                info.fps = cap.get(cv2.CAP_PROP_FPS)
-                info.capture = cap
-                
-                # Adiciona a câmera
-                self.available_cameras.append(info)
-                self.camera_combo.addItem(str(info), info)
-                
-                # Atualiza interface
-                self.status_label.setText("Câmera detectada")
-                self.status_label.setStyleSheet("color: green;")
-                self.camera_frame.show()
-                self.ok_btn.show()
-            else:
-                self.status_label.setText("Nenhuma câmera detectada")
-                self.status_label.setStyleSheet("color: red;")
-                
-        except Exception as e:
-            logger.error(f"Erro ao detectar câmera: {str(e)}")
-            self.status_label.setText("Erro ao detectar câmera")
+        """Detecta câmeras de forma rápida e direta."""
+        self._cleanup_cameras()
+        
+        cap, error = CameraBackend.try_backend(0)
+        if not cap:
+            self.status_label.setText("Nenhuma câmera detectada")
             self.status_label.setStyleSheet("color: red;")
-    
+            return
+        
+        # Configura câmera com informações básicas
+        info = CameraInfo(0, "Câmera Principal")
+        info.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        info.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        info.capture = cap
+        
+        # Atualiza interface rapidamente
+        self.available_cameras.append(info)
+        self.camera_combo.addItem(str(info), info)
+        self.camera_frame.show()
+        self.ok_btn.show()
+        self.status_label.setText("Câmera conectada")
+        self.status_label.setStyleSheet("color: green;")
     
     def _update_camera_info(self, index: int):
-        """
-        Atualiza informações da câmera selecionada.
-        
-        Args:
-            index: Índice da câmera
-        """
-        try:
-            if index >= 0:
-                camera = self.camera_combo.itemData(index)
-                self.camera_info.setText(
-                    f"Resolução: {camera.width}x{camera.height}\n"
-                    f"FPS: {camera.fps:.1f}\n"
-                    f"Backend: {camera.backend_name}"
-                )
-            
-        except Exception as e:
-            logger.error(f"Erro ao atualizar info: {str(e)}")
+        """Atualiza informações básicas da câmera."""
+        if index >= 0:
+            camera = self.camera_combo.itemData(index)
+            self.camera_info.setText(f"Resolução: {camera.width}x{camera.height}")
     
     def select_camera(self):
         """Seleciona câmera como fonte."""
@@ -323,37 +262,25 @@ class VideoSourceDialog(QDialog):
             logger.error(f"Erro ao selecionar vídeo: {str(e)}")
     
     def get_camera_info(self) -> Optional[CameraInfo]:
-        """
-        Retorna as informações completas da câmera selecionada.
-        
-        Returns:
-            Informações da câmera ou None se nenhuma selecionada
-        """
-        try:
-            camera = self.camera_combo.currentData()
-            if camera:
-                # Sempre cria uma nova conexão
-                cap = cv2.VideoCapture(0)
-                if cap.isOpened():
-                    camera.capture = cap
-                    return camera
+        """Retorna as informações da câmera selecionada."""
+        camera = self.camera_combo.currentData()
+        if not camera:
             return None
             
-        except Exception as e:
-            logger.error(f"Erro ao obter câmera: {str(e)}")
-            return None
+        # Reutiliza a conexão existente se estiver ativa
+        if camera.capture and camera.capture.isOpened():
+            return camera
+            
+        # Cria nova conexão apenas se necessário
+        cap = cv2.VideoCapture(0)
+        if cap.isOpened():
+            cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Minimiza buffer
+            camera.capture = cap
+            return camera
+            
+        return None
     
     def get_camera_id(self) -> Optional[int]:
-        """
-        Retorna o ID da câmera selecionada.
-        
-        Returns:
-            ID da câmera ou None se nenhuma selecionada
-        """
-        try:
-            camera = self.get_camera_info()
-            return camera.id if camera else None
-            
-        except Exception as e:
-            logger.error(f"Erro ao obter ID da câmera: {str(e)}")
-            return None
+        """Retorna o ID da câmera selecionada."""
+        camera = self.get_camera_info()
+        return camera.id if camera else None

@@ -169,7 +169,7 @@ class VideoTab(QWidget):
             playback_layout.setContentsMargins(0, 0, 0, 0)
             
             # Botão de monitoramento
-            self.connect_button = QPushButton("Iniciar Monitoramento")
+            self.connect_button = QPushButton("Escolher fonte de vídeo")
             self.connect_button.setIcon(QIcon.fromTheme("network-wired"))
             self.connect_button.clicked.connect(self.connect_clicked.emit)
             self.connect_button.setStyleSheet("""
@@ -311,7 +311,7 @@ class VideoTab(QWidget):
         """
         try:
             self.play_pause_button.setEnabled(enabled)
-            self.connect_button.setEnabled(not enabled)
+            self.connect_button.setEnabled(True)  # Sempre habilitado
         except Exception as e:
             logger.error(f"Erro ao habilitar controles: {str(e)}")
     

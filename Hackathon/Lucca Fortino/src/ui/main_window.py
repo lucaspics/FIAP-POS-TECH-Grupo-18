@@ -113,9 +113,6 @@ class SecurityCameraApp(QMainWindow):
             self.status_bar = QStatusBar()
             self.setStatusBar(self.status_bar)
             
-            # Estado inicial
-            self.video_tab.enable_controls(False)
-            
             logger.info("Interface inicializada com sucesso")
             
         except Exception as e:
@@ -271,6 +268,9 @@ class SecurityCameraApp(QMainWindow):
                     logger.info("Fim do vídeo")
                     self.frame_timer.stop()
                     self.video_tab.set_playing(False)
+                    # Reiniciar o vídeo
+                    self.camera_manager.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    self.video_tab.update_time(0)
                 return
             
             # Processar frame

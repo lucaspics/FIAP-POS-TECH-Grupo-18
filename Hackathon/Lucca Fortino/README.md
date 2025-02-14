@@ -157,3 +157,7 @@ O sistema foi projetado para otimizar o uso de recursos:
 2. Verifique a iluminação e qualidade do vídeo
 3. Confirme se o modelo está carregado corretamente
 4. Verifique os logs de detecção
+
+
+# Mais detalhes técnicos:
+docs\technical

@@ -116,10 +116,3 @@ O VisionGuard representa uma solução técnica robusta e moderna para monitoram
 - Sistema de cache
 - Processamento distribuído
 
-### 3. Integrações
-- APIs externas
-- Sistemas legados
-- Serviços cloud
-- Bancos de dados
-
-Este resumo fornece uma visão geral técnica do sistema, destacando seus principais componentes, características e benefícios. Para mais detalhes, consulte a documentação técnica completa disponível no diretório /docs/technical/.

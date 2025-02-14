@@ -96,7 +96,6 @@ VisionGuard/
 │   └── workers/       # Workers assíncronos
 ├── models/           # Modelos treinados
 ├── logs/            # Logs e alertas
-└── data/            # Dados de treinamento
 ```
 
 ## Modelo de Detecção

@@ -5,7 +5,7 @@ Utilitários para manipulação de alertas na interface gráfica.
 import os
 import cv2
 from datetime import datetime
-from typing import Tuple, Optional, Dict, Any
+from typing import Tuple, Optional, Dict, Any, List
 from pathlib import Path
 from PyQt5.QtWidgets import (
     QWidget, 
@@ -16,12 +16,103 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QFrame
 )
-from PyQt5.QtGui import QPixmap, QIcon, QColor
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QPixmap, QIcon, QColor, QPainter, QPen
+from PyQt5.QtCore import Qt, pyqtSignal, QRect, QSize, QRectF
 from config.logging_config import get_logger
 from config.app_config import LOG_DIRS, ALERT_CONFIG
 
 logger = get_logger('alert_utils')
+
+class ConfidenceIndicator(QWidget):
+    """Widget para exibir indicador visual de confiança."""
+    
+    def __init__(self, confidence: float, parent: Optional[QWidget] = None):
+        """
+        Inicializa o indicador de confiança.
+        
+        Args:
+            confidence: Valor de confiança (0-1)
+            parent: Widget pai opcional
+        """
+        super().__init__(parent)
+        self.confidence = confidence
+        self.setMinimumSize(80, 20)
+        self.setMaximumHeight(20)
+        
+        # Configurações do indicador
+        self.num_segments = 10
+        self.segment_spacing = 2
+        self.segment_colors = self._generate_segment_colors()
+    
+    def _generate_segment_colors(self) -> List[QColor]:
+        """Gera as cores para cada segmento."""
+        colors = []
+        for i in range(self.num_segments):
+            if i < self.num_segments * 0.4:  # Primeiros 40% - Verde/Amarelo
+                colors.append(QColor("#FFD700"))  # Amarelo
+            elif i < self.num_segments * 0.7:  # 40-70% - Laranja
+                colors.append(QColor("#FFA500"))  # Laranja
+            else:  # Últimos 30% - Vermelho
+                colors.append(QColor("#FF0000"))  # Vermelho
+        return colors
+    
+    def paintEvent(self, event):
+        """Desenha o indicador com segmentos."""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Calcular dimensões dos segmentos
+        total_width = self.width() - (self.num_segments - 1) * self.segment_spacing
+        segment_width = int(total_width / self.num_segments)
+        segment_height = self.height()
+        
+        # Número de segmentos ativos baseado na confiança
+        active_segments = int(round(self.confidence * self.num_segments))
+        
+        # Desenhar segmentos
+        x = 0
+        for i in range(self.num_segments):
+            # Definir cor do segmento
+            if i < active_segments:
+                painter.setBrush(self.segment_colors[i])
+                painter.setPen(Qt.NoPen)
+            else:
+                painter.setBrush(QColor("#f0f0f0"))
+                painter.setPen(QPen(QColor("#d0d0d0"), 1))
+            
+            # Criar retângulo para o segmento
+            rect = QRectF(
+                float(x),
+                0.0,
+                float(segment_width),
+                float(segment_height)
+            )
+            
+            # Desenhar segmento
+            painter.drawRoundedRect(rect, 2.0, 2.0)
+            
+            x += segment_width + self.segment_spacing
+
+class ConfidenceWidget(QWidget):
+    """Widget que combina label de porcentagem e indicador visual."""
+    
+    def __init__(self, confidence: float, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(5)
+        
+        # Label de porcentagem
+        self.percent_label = QLabel(f"{confidence * 100:.1f}%")
+        self.percent_label.setStyleSheet("color: #666; min-width: 45px;")
+        layout.addWidget(self.percent_label)
+        
+        # Indicador visual
+        self.indicator = ConfidenceIndicator(confidence)
+        layout.addWidget(self.indicator)
+        
+        # Stretch para alinhar à esquerda
+        layout.addStretch()
 
 def create_error_item(error_message: str) -> Tuple[QListWidgetItem, QWidget]:
     """Cria um item de erro para a lista."""
@@ -127,17 +218,27 @@ class AlertWidget(QWidget):
             )
             info_layout.addWidget(time_label)
             
-            # Detecções
+            # Detecções com indicadores visuais
             if self.detections:
-                detections_text = []
                 for det in self.detections:
-                    conf = det.get('confidence', 0) * 100
-                    detections_text.append(
-                        f"{det.get('class_name', 'Desconhecido')}: {conf:.1f}%"
-                    )
-                det_label = QLabel("<br>".join(detections_text))
-                det_label.setStyleSheet("color: #666;")
-                info_layout.addWidget(det_label)
+                    det_container = QWidget()
+                    det_layout = QHBoxLayout(det_container)
+                    det_layout.setContentsMargins(0, 0, 0, 0)
+                    det_layout.setSpacing(10)
+                    
+                    # Nome da classe
+                    class_name = det.get('class_name', 'Desconhecido')
+                    class_label = QLabel(f"{class_name}:")
+                    class_label.setStyleSheet("color: #666;")
+                    class_label.setMinimumWidth(80)
+                    det_layout.addWidget(class_label)
+                    
+                    # Widget de confiança (porcentagem + indicador)
+                    confidence = det.get('confidence', 0)
+                    confidence_widget = ConfidenceWidget(confidence)
+                    det_layout.addWidget(confidence_widget)
+                    
+                    info_layout.addWidget(det_container)
             
             frame_layout.addLayout(info_layout)
             layout.addWidget(frame)
@@ -229,15 +330,6 @@ def create_alert_list_item(alert_data: Dict[str, Any]) -> Tuple[QListWidgetItem,
         except Exception as e:
             logger.error(f"Erro ao criar widget: {str(e)}")
             return create_error_item(f"Erro ao criar alerta: {str(e)}")
-        
-        # Criar item
-        item = QListWidgetItem()
-        item.setSizeHint(widget.sizeHint())
-        
-        # Armazenar dados para referência
-        item.setData(Qt.UserRole, alert_data)
-        
-        return item, widget
         
     except Exception as e:
         logger.error(f"Erro ao criar item de alerta: {str(e)}")

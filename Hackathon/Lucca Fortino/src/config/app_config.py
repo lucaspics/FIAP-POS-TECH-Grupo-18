@@ -36,7 +36,7 @@ LOG_DIRS = {
 MODEL_CONFIG = {
    # 'path': DIRS['models'] / 'weapon-detection' / 'weights' / 'best.pt',
    'path': DIRS['models'] / 'cortante2' / 'weights' / 'best.pt',
-    'confidence_threshold': 0.25,
+    'confidence_threshold': 0.3,
     'alert_threshold': 0.5,
     'target_height': 320
 }
@@ -44,7 +44,7 @@ MODEL_CONFIG = {
 # Configurações de vídeo/câmera
 VIDEO_CONFIG = {
     'frame_interval': 30,  # ms entre frames
-    'analysis_interval': 5,  # frames entre análises
+    'analysis_interval': 10,  # frames entre análises
     'max_concurrent_workers': 2,
     'frame_timeout': 5.0,  # segundos - tempo maior para tolerar atrasos
     'width': 640,  # largura do vídeo
@@ -66,7 +66,7 @@ ALERT_CONFIG = {
 # Configurações de interface
 UI_CONFIG = {
     'window_title': 'VisionGuard System',
-    'window_size': (1000, 600),
+    'window_size': (1400, 600),
     'update_interval': 1000,  # ms
     'max_log_entries': 100
 }

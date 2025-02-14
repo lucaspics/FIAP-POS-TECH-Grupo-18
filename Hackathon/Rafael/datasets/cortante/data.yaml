@@ -1,0 +1,6 @@
+train: C:/Users/rafae/PycharmProjects/fiaphackaton/pythonProject2/datasets/cortante/train/images
+val: C:/Users/rafae/PycharmProjects/fiaphackaton/pythonProject2/datasets/cortante/valid/images
+test: C:/Users/rafae/PycharmProjects/fiaphackaton/pythonProject2/datasets/cortante/test/images
+
+nc: 1
+names: ['cortante']

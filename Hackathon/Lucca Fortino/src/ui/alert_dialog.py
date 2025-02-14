@@ -10,15 +10,18 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QFrame,
     QWidget,
-    QGridLayout
+    QGridLayout,
+    QScrollArea,
+    QSizePolicy
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QColor, QFont, QIcon
+from PyQt5.QtGui import QPixmap, QIcon
 from datetime import datetime
 from typing import Dict, Any, List
 from pathlib import Path
 import os
 from config.logging_config import get_logger
+from core.alert_utils import ConfidenceWidget
 
 logger = get_logger('alert_dialog')
 
@@ -27,76 +30,15 @@ class DetectionImageLabel(QLabel):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.detections = []
         self.setMinimumSize(600, 400)
         self.setStyleSheet("""
             QLabel {
-                background-color: #2c2c2c;
+                background-color: #f5f5f5;
+                border: 1px solid #e0e0e0;
                 border-radius: 8px;
                 padding: 10px;
             }
         """)
-        
-    def set_detections(self, detections: List[Dict]):
-        """Define as detecções a serem desenhadas."""
-        self.detections = detections
-        self.update()
-        
-    def paintEvent(self, event):
-        """Sobrescreve o evento de pintura para desenhar as detecções."""
-        super().paintEvent(event)
-        
-        if not self.pixmap() or not self.detections:
-            return
-            
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        
-        # Configurar fonte
-        font = QFont("Arial", 10)
-        font.setBold(True)
-        painter.setFont(font)
-        
-        # Calcular escala
-        scale_x = self.width() / self.pixmap().width()
-        scale_y = self.height() / self.pixmap().height()
-        scale = min(scale_x, scale_y)
-        
-        # Offset para centralizar
-        offset_x = (self.width() - self.pixmap().width() * scale) / 2
-        offset_y = (self.height() - self.pixmap().height() * scale) / 2
-        
-        for det in self.detections:
-            bbox = det.get('bbox', [])
-            if bbox:
-                # Escalar coordenadas
-                x1, y1, x2, y2 = bbox
-                x1 = int(x1 * scale + offset_x)
-                y1 = int(y1 * scale + offset_y)
-                x2 = int(x2 * scale + offset_x)
-                y2 = int(y2 * scale + offset_y)
-                
-                # Desenhar retângulo com borda brilhante
-                pen = QPen(QColor(255, 50, 50))
-                pen.setWidth(3)
-                painter.setPen(pen)
-                painter.drawRect(x1, y1, x2 - x1, y2 - y1)
-                
-                # Fundo do texto
-                conf = det.get('confidence', 0) * 100
-                text = f"{det.get('class_name', 'Desconhecido')} ({conf:.1f}%)"
-                text_rect = painter.fontMetrics().boundingRect(text)
-                text_rect.moveTop(y1 - text_rect.height() - 5)
-                text_rect.moveLeft(x1)
-                text_rect.adjust(-5, -2, 5, 2)
-                
-                painter.fillRect(text_rect, QColor(40, 40, 40, 180))
-                
-                # Texto com borda
-                painter.setPen(QPen(QColor(0, 0, 0), 2))
-                painter.drawText(x1, y1 - 8, text)
-                painter.setPen(QPen(QColor(255, 50, 50)))
-                painter.drawText(x1, y1 - 8, text)
 
 class AlertDialog(QDialog):
     """Dialog para exibição detalhada de alertas."""
@@ -123,22 +65,24 @@ class AlertDialog(QDialog):
             
             # Layout principal
             layout = QVBoxLayout(self)
-            layout.setSpacing(20)
-            layout.setContentsMargins(20, 20, 20, 20)
+            layout.setSpacing(24)
+            layout.setContentsMargins(24, 24, 24, 24)
             
             # Cabeçalho com timestamp
             header = QFrame()
             header.setStyleSheet("""
                 QFrame {
-                    background-color: #2c2c2c;
+                    background-color: white;
+                    border: 1px solid #e0e0e0;
                     border-radius: 8px;
-                    padding: 15px;
+                    padding: 16px;
                 }
                 QLabel {
-                    color: white;
+                    color: #333333;
                 }
             """)
             header_layout = QHBoxLayout(header)
+            header_layout.setSpacing(16)
             
             # Ícone de alerta
             icon_label = QLabel()
@@ -148,7 +92,12 @@ class AlertDialog(QDialog):
             # Timestamp
             timestamp = datetime.fromisoformat(self.alert_data.get('timestamp', ''))
             time_label = QLabel(f"Alerta detectado em {timestamp.strftime('%d/%m/%Y às %H:%M:%S')}")
-            time_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+            time_label.setStyleSheet("""
+                font-family: 'Segoe UI';
+                font-size: 18px;
+                font-weight: 600;
+                color: #1a1a1a;
+            """)
             header_layout.addWidget(time_label)
             header_layout.addStretch()
             
@@ -158,12 +107,14 @@ class AlertDialog(QDialog):
             main_container = QFrame()
             main_container.setStyleSheet("""
                 QFrame {
-                    background-color: #f5f5f5;
+                    background-color: white;
+                    border: 1px solid #e0e0e0;
                     border-radius: 8px;
                 }
             """)
             main_layout = QHBoxLayout(main_container)
-            main_layout.setSpacing(20)
+            main_layout.setSpacing(24)
+            main_layout.setContentsMargins(16, 16, 16, 16)
             
             # Imagem
             alert_id = self.alert_data.get('alert_id')
@@ -186,70 +137,73 @@ class AlertDialog(QDialog):
                             Qt.SmoothTransformation
                         )
                         image_label.setPixmap(scaled_pixmap)
-                        
-                        # Definir detecções
-                        if self.alert_data.get('detections'):
-                            image_label.set_detections(self.alert_data['detections'])
-                        
                         main_layout.addWidget(image_label)
                     else:
                         logger.error("Falha ao carregar pixmap da imagem")
                 else:
                     logger.error(f"Arquivo de imagem não encontrado: {image_path}")
             
-            # Painel de detalhes
+            # Painel de detalhes com scroll
             if self.alert_data.get('detections'):
+                # Container para o conteúdo
                 details_panel = QFrame()
+                details_panel.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
                 details_panel.setStyleSheet("""
                     QFrame {
-                        background-color: #2c2c2c;
+                        background-color: #f8f9fa;
+                        border: 1px solid #e0e0e0;
                         border-radius: 8px;
-                        padding: 15px;
-                        min-width: 250px;
+                        padding: 12px;
                     }
                     QLabel {
-                        color: white;
-                        padding: 5px;
+                        color: #333333;
+                        padding: 4px;
                     }
                 """)
                 details_layout = QVBoxLayout(details_panel)
+                details_layout.setSpacing(12)
+                details_layout.setContentsMargins(8, 8, 8, 8)
                 
                 # Título do painel
                 title = QLabel("Detecções")
-                title.setStyleSheet("font-size: 14px; font-weight: bold; color: #fff;")
+                title.setStyleSheet("""
+                    font-family: 'Segoe UI';
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #1a1a1a;
+                """)
                 details_layout.addWidget(title)
                 
                 # Lista de detecções
                 for det in self.alert_data['detections']:
                     det_frame = QFrame()
+                    det_frame.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
                     det_frame.setStyleSheet("""
                         QFrame {
-                            background-color: #3c3c3c;
-                            border-radius: 5px;
-                            margin: 5px;
-                            padding: 10px;
+                            background-color: white;
+                            border: 1px solid #e0e0e0;
+                            border-radius: 6px;
+                            padding: 8px;
                         }
                     """)
-                    det_layout = QVBoxLayout(det_frame)
+                    det_layout = QHBoxLayout(det_frame)
+                    det_layout.setSpacing(8)
+                    det_layout.setContentsMargins(8, 8, 8, 8)
                     
-                    # Classe e confiança
-                    conf = det.get('confidence', 0) * 100
                     class_label = QLabel(f"🎯 {det.get('class_name', 'Desconhecido')}")
-                    class_label.setStyleSheet("font-weight: bold; color: #ff3232;")
+                    class_label.setStyleSheet("""
+                        font-family: 'Segoe UI';
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: #FF3232;
+                    """)
                     det_layout.addWidget(class_label)
                     
-                    conf_label = QLabel(f"Confiança: {conf:.1f}%")
-                    det_layout.addWidget(conf_label)
-                    
-                    # Bounding box
-                    bbox = det.get('bbox', [])
-                    if bbox:
-                        pos_label = QLabel(
-                            f"Posição: ({int(bbox[0])}, {int(bbox[1])}) - "
-                            f"({int(bbox[2])}, {int(bbox[3])})"
-                        )
-                        pos_label.setStyleSheet("color: #aaa;")
-                        det_layout.addWidget(pos_label)
+                    # Indicador de confiança
+                    confidence = det.get('confidence', 0)
+                    confidence_widget = ConfidenceWidget(confidence)
+                    det_layout.addWidget(confidence_widget)
+                    det_layout.addStretch()
                     
                     details_layout.addWidget(det_frame)
                 
@@ -262,16 +216,22 @@ class AlertDialog(QDialog):
             button_container = QFrame()
             button_container.setStyleSheet("""
                 QPushButton {
-                    background-color: #2c2c2c;
-                    color: white;
-                    border: none;
+                    background-color: #f8f9fa;
+                    color: #1a1a1a;
+                    border: 1px solid #e0e0e0;
                     border-radius: 4px;
-                    padding: 10px 20px;
-                    font-weight: bold;
+                    padding: 8px 24px;
+                    font-family: 'Segoe UI';
+                    font-size: 14px;
+                    font-weight: 500;
                     min-width: 120px;
                 }
                 QPushButton:hover {
-                    background-color: #404040;
+                    background-color: #e9ecef;
+                    border-color: #dee2e6;
+                }
+                QPushButton:pressed {
+                    background-color: #dee2e6;
                 }
             """)
             button_layout = QHBoxLayout(button_container)
@@ -282,6 +242,13 @@ class AlertDialog(QDialog):
             button_layout.addStretch()
             
             layout.addWidget(button_container)
+            
+            # Estilo global do dialog
+            self.setStyleSheet("""
+                QDialog {
+                    background-color: #f8f9fa;
+                }
+            """)
             
             logger.info(f"Dialog inicializado com dados: {self.alert_data}")
             

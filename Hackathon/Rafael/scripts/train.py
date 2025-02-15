@@ -7,7 +7,7 @@ def train_model():
 
     # Treinar o modelo com o dataset
     model.train(
-        data="C:/Users/rafae/PycharmProjects/fiaphackaton/pythonProject2/datasets/cortante/data.yaml",  # Caminho do arquivo data.yaml
+        data="C:/Users/rafae/PycharmProjects/fiaphackaton/pythonProject2/datasets/cortante-webcam/data.yaml",  # Caminho do arquivo data.yaml
         epochs=50,  # Número de épocas de treinamento
         batch=16,  # Tamanho do lote
         imgsz=640,  # Tamanho das imagens

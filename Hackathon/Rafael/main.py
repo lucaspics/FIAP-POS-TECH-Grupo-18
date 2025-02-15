@@ -7,8 +7,7 @@ def main():
     parser.add_argument('--source', type=str, required=True, help="Fonte: 'webcam' ou caminho do vídeo")
     args = parser.parse_args()
 
-    #detector = Detector(model_path="models/sharp-detection/weights/best.pt", email_config=EMAIL_CONFIG)
-    detector = Detector(model_path="scripts/models/cortante2/weights/best.pt", email_config=EMAIL_CONFIG)
+    detector = Detector(model_path="scripts/models/cortante4/weights/best.pt", email_config=EMAIL_CONFIG)
     detector.run(source=args.source)
 
 if __name__ == "__main__":

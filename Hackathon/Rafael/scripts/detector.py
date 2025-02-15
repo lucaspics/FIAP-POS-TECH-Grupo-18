@@ -15,7 +15,7 @@ class Detector:
         self.email_config = email_config
         self.class_names = ['cortante']  # Adicione os nomes das classes na ordem do treinamento
         self.alert_sent = set()  # Para rastrear os objetos detectados e evitar múltiplos envios
-        self.detection_history = defaultdict(lambda: deque(maxlen=3))  # Histórico de detecções (últimos 3 frames)
+        self.detection_history = defaultdict(lambda: deque(maxlen=2))  # Histórico de detecções (últimos 2 frames)
 
     def send_email_thread(self, frame):
         """Executa o envio de e-mail em uma thread separada."""
@@ -89,10 +89,10 @@ class Detector:
                         cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
                     # Adicionar a detecção ao histórico
-                    self.detection_history[cls].append(conf > 0.7)  # Verifica se a confiança é > 70%
+                    self.detection_history[cls].append(conf > 0.65)  # Verifica se a confiança é > 65%
 
-                    # Verifica se o objeto foi detectado consistentemente nos últimos 3 frames
-                    if len(self.detection_history[cls]) == 3 and all(self.detection_history[cls]):
+                    # Verifica se o objeto foi detectado consistentemente nos últimos 2 frames
+                    if len(self.detection_history[cls]) == 2 and all(self.detection_history[cls]):
                         # Enviar e-mail apenas se a confiança for maior que 80%
                         if conf > 0.8 and cls not in self.alert_sent:
                             print(f"[INFO] Enviando alerta para: {self.class_names[cls]} com confiança de {conf:.2f}")

@@ -49,6 +49,7 @@ O VisionGuard é um sistema de vigilância inteligente que utiliza técnicas ava
 - **OpenCV:** Processamento de imagem e vídeo
 - **SQLite:** Armazenamento local de configurações e logs
 - **SMTP:** Sistema de envio de alertas por email
+- **Make Sense:** Ferramenta online que facilita o labeling de imagens
 
 ## Configurações
 

@@ -10,7 +10,7 @@ Sistema de detecção de objetos cortantes em tempo real usando YOLOv8.
 - Fabio Ferreira Scaion RM354943
 
 ## Link para o vídeo de Apresentação
-https://youtu.be/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+https://youtu.be/SCtTDisKDPY
 
 ## Descrição do Projeto
 
